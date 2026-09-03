@@ -1,0 +1,1718 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2026 졸업준비위원회 브리핑</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0e12;
+        --panel: #16181f;
+        --line: #2a2d38;
+        --fg: #e8eaf0;
+        --muted: #8b90a0;
+        --accent: #4f7cff;
+
+        /* 슬라이드 팔레트 (2025 브리핑에서 추출) */
+        --s-bg: #171717;
+        --s-card: #2e2e2e;
+        --s-card-hi: #2e2e16;
+        --s-yellow: #fdfd00;
+        --s-white: #ffffff;
+        --s-dim: #b0b0b0;
+        --s-head: #8a8a8a;
+        --s-rule: #666666;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          'Pretendard',
+          'Noto Sans KR',
+          -apple-system,
+          'Malgun Gothic',
+          sans-serif;
+        overflow: hidden;
+      }
+
+      /* ---------- 무대 ---------- */
+      #stage {
+        position: fixed;
+        inset: 0 0 52px 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      #frame {
+        position: relative;
+        width: min(100%, calc((100vh - 100px) * 16 / 9));
+        aspect-ratio: 16 / 9;
+        background: var(--s-bg);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.18s ease;
+      }
+      .slide.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* 960x540 좌표계 캔버스 — --s 배율로 프레임에 맞춘다 */
+      .canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 960px;
+        height: 540px;
+        transform-origin: 0 0;
+        transform: scale(var(--s, 1));
+        background: var(--s-bg);
+        color: var(--s-white);
+        font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+        font-weight: 400;
+        overflow: hidden;
+      }
+
+      /* ---------- 슬라이드 공통 요소 ---------- */
+      .hd {
+        position: absolute;
+        top: 40px;
+        left: 52px;
+        right: 52px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        font-weight: 300;
+        color: var(--s-head);
+        letter-spacing: 0.01em;
+      }
+      .stitle {
+        position: absolute;
+        top: 88px;
+        left: 52px;
+        margin: 0;
+        font-size: 19px;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+      }
+      .stitle .n {
+        margin-right: 14px;
+      }
+      .sub {
+        position: absolute;
+        left: 52px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--s-yellow);
+      }
+      .body {
+        position: absolute;
+        left: 52px;
+        right: 52px;
+      }
+      .yl {
+        color: var(--s-yellow);
+      }
+      .dim {
+        color: var(--s-dim);
+      }
+      .b {
+        font-weight: 700;
+      }
+
+      /* 카드 */
+      .card {
+        background: var(--s-card);
+        border-radius: 12px;
+        padding: 16px 18px;
+      }
+      .card.hi {
+        background: var(--s-card-hi);
+      }
+      .card h4 {
+        margin: 0 0 12px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--s-yellow);
+      }
+      .card ul {
+        margin: 0;
+        padding-left: 12px;
+      }
+      .card li {
+        font-size: 9.5px;
+        line-height: 1.75;
+        color: var(--s-white);
+      }
+      .card p {
+        margin: 0;
+        font-size: 9.5px;
+        line-height: 1.75;
+        color: var(--s-dim);
+      }
+
+      /* 가로 나열 박스 (부문별 구성 등) */
+      .pill {
+        background: var(--s-card);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      /* ---------- 조직도 ---------- */
+      .org {
+        position: absolute;
+        left: 52px;
+        right: 52px;
+      }
+      .org-label {
+        position: absolute;
+        right: 0;
+        text-align: center;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.45;
+        width: 66px;
+      }
+      .org-root {
+        text-align: center;
+        font-size: 10.5px;
+      }
+      .org-stem {
+        width: 1px;
+        height: 15px;
+        background: var(--s-rule);
+        margin: 5px auto 0;
+      }
+      .org-bus {
+        height: 1px;
+        background: var(--s-rule);
+        margin: 0 10% 0 10%;
+      }
+      .org-nodes {
+        display: flex;
+      }
+      .org-node {
+        flex: 1;
+        position: relative;
+        padding-top: 15px;
+        text-align: center;
+        font-size: 10.5px;
+      }
+      .org-node::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 1px;
+        height: 15px;
+        background: var(--s-rule);
+      }
+      /* 하위 팀 */
+      .org-sub {
+        margin-top: 4px;
+      }
+      .org-sub .org-bus {
+        margin: 0 25%;
+      }
+      .org-sub .org-node {
+        padding-top: 12px;
+        font-size: 9.5px;
+        color: var(--s-dim);
+      }
+      .org-sub .org-node::before {
+        height: 12px;
+      }
+      /* 묶음 강조 박스 */
+      .org-box {
+        position: absolute;
+        border: 1px solid #7a7a2a;
+        background: rgba(120, 120, 30, 0.13);
+        border-radius: 3px;
+      }
+
+      /* 오버레이(변경사항) */
+      .veil {
+        position: absolute;
+        inset: 0;
+        background: rgba(23, 23, 23, 0.84);
+      }
+      .ov {
+        position: absolute;
+        left: 110px;
+        right: 110px;
+      }
+      .ov h3 {
+        margin: 0 0 20px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--s-yellow);
+      }
+      .ov li {
+        font-size: 12px;
+        line-height: 2.1;
+      }
+      .ov .note {
+        font-size: 11px;
+        color: var(--s-dim);
+        padding-left: 18px;
+      }
+
+      /* 표 */
+      table.t {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+      table.t th,
+      table.t td {
+        border-bottom: 1px solid #3a3a3a;
+        padding: 7px 9px;
+        text-align: left;
+        vertical-align: top;
+        line-height: 1.6;
+      }
+      table.t th {
+        color: var(--s-yellow);
+        font-weight: 700;
+        border-bottom-color: #5a5a20;
+      }
+      table.t td.c,
+      table.t th.c {
+        text-align: center;
+      }
+
+      /* 단계 흐름 */
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .flow .step {
+        flex: 1;
+        background: var(--s-card);
+        border-radius: 10px;
+        padding: 13px 12px;
+        text-align: center;
+      }
+      .flow .step .k {
+        display: block;
+        font-size: 9px;
+        color: var(--s-yellow);
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .flow .step .v {
+        font-size: 10.5px;
+        line-height: 1.5;
+      }
+      .flow .arw {
+        align-self: center;
+        color: var(--s-rule);
+        font-size: 12px;
+      }
+
+      /* 공식 박스 */
+      .formula {
+        background: var(--s-card-hi);
+        border-radius: 10px;
+        padding: 16px 20px;
+        text-align: center;
+      }
+      .formula .eq {
+        font-size: 13px;
+        line-height: 1.9;
+      }
+      .formula .cap {
+        font-size: 9.5px;
+        color: var(--s-dim);
+        margin-top: 10px;
+        line-height: 1.7;
+      }
+
+      /* 표지 */
+      .cover-kicker {
+        position: absolute;
+        left: 52px;
+        bottom: 118px;
+        font-size: 20px;
+        color: #8a8a8a;
+        font-weight: 300;
+      }
+      .cover-title {
+        position: absolute;
+        left: 52px;
+        bottom: 56px;
+        font-size: 46px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .end-line {
+        position: absolute;
+        left: 52px;
+        right: 52px;
+        top: 252px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--s-yellow);
+      }
+
+      /* 명단 카드 */
+      .roster {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 9px;
+      }
+      .rcard {
+        padding: 13px 12px;
+      }
+      .rcard h4 {
+        margin: 0 0 9px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 4px;
+        font-size: 11px;
+      }
+      .rcard h4 .rn {
+        font-size: 9px;
+        font-weight: 400;
+        color: var(--s-dim);
+      }
+      .rlead {
+        font-size: 9.5px;
+        line-height: 1.7;
+        font-weight: 700;
+        color: var(--s-white);
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #454545;
+      }
+      .rmem {
+        font-size: 9.5px;
+        line-height: 1.85;
+        color: var(--s-dim);
+      }
+      .rmem .sm {
+        font-size: 8.5px;
+      }
+
+      /* 촘촘한 표 */
+      table.t.tight th,
+      table.t.tight td {
+        padding: 4.5px 8px;
+      }
+
+      /* 명단용 큰 표 */
+      table.t.big {
+        font-size: 11.5px;
+      }
+      table.t.big th,
+      table.t.big td {
+        padding: 9.5px 12px;
+        vertical-align: middle;
+      }
+      table.t.big tr.sum td {
+        background: var(--s-card-hi);
+        border-bottom: none;
+        border-top: 1px solid #5a5a20;
+        font-weight: 700;
+      }
+
+      /* ---------- 뷰어 UI ---------- */
+      .zone {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 22%;
+        z-index: 5;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+      }
+      .zone.prev {
+        left: 0;
+      }
+      .zone.next {
+        right: 0;
+      }
+
+      #bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 16px;
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      #bar .title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--muted);
+      }
+      #bar .title b {
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .btn {
+        background: #22252f;
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        height: 30px;
+        padding: 0 11px;
+        font: inherit;
+        font-size: 12.5px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background: #2c3040;
+      }
+      #counter {
+        font-variant-numeric: tabular-nums;
+        color: var(--muted);
+        min-width: 58px;
+        text-align: center;
+      }
+      #counter b {
+        color: var(--fg);
+      }
+      #progress {
+        position: fixed;
+        left: 0;
+        bottom: 52px;
+        height: 2px;
+        background: var(--accent);
+        transition: width 0.18s ease;
+        z-index: 20;
+      }
+
+      #overview {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: none;
+        overflow-y: auto;
+        padding: 28px;
+        background: rgba(10, 11, 15, 0.97);
+      }
+      #overview.open {
+        display: block;
+      }
+      #overview h2 {
+        margin: 0 0 20px;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      #grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .thumb {
+        padding: 0;
+        overflow: hidden;
+        text-align: left;
+        font: inherit;
+        color: var(--fg);
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .thumb:hover {
+        border-color: var(--accent);
+      }
+      .thumb.current {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent);
+      }
+      .thumb-canvas {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        background: var(--s-bg);
+      }
+      .thumb-canvas .canvas {
+        transform: scale(var(--ts, 0.27));
+      }
+      .thumb-meta {
+        display: block;
+        padding: 9px 11px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: var(--muted);
+      }
+      .thumb-meta b {
+        color: var(--fg);
+        margin-right: 6px;
+      }
+
+      body.presenting #bar,
+      body.presenting #progress {
+        display: none;
+      }
+      body.presenting #stage {
+        inset: 0;
+        padding: 0;
+      }
+      body.presenting #frame {
+        width: min(100vw, calc(100vh * 16 / 9));
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      @media print {
+        body {
+          overflow: visible;
+          background: #fff;
+        }
+        #bar,
+        #progress,
+        #overview,
+        .zone {
+          display: none !important;
+        }
+        #stage {
+          position: static;
+          inset: auto;
+          padding: 0;
+          display: block;
+        }
+        #frame {
+          width: 100%;
+          box-shadow: none;
+          border-radius: 0;
+        }
+        .slide {
+          position: static;
+          opacity: 1 !important;
+          visibility: visible !important;
+          page-break-after: always;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <div id="frame">
+        <!-- 1. 표지 -->
+        <section class="slide" data-title="표지">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <div class="cover-kicker">2026 디지털미디어디자인과</div>
+            <div class="cover-title">졸업준비위원회 브리핑</div>
+          </div>
+        </section>
+
+        <!-- 2. 부문별 팀 구성 -->
+        <section
+          class="slide"
+          data-title="1. 2026 캡스톤디자인 부문 별 팀 구성"
+        >
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle">
+              <span class="n">1.</span>2026 캡스톤디자인(졸업작품) 부문 별 팀
+              구성
+            </h2>
+            <div class="body" style="top: 144px">
+              <div style="display: flex; align-items: center; gap: 20px">
+                <div
+                  style="
+                    flex: 0 0 292px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                  "
+                >
+                  <div
+                    class="pill"
+                    style="height: 58px; font-size: 11px; padding: 0 12px"
+                  >
+                    01) 2026 졸업전시 브랜딩<br /><span class="yl b"
+                      >1팀 (8명)</span
+                    >
+                  </div>
+                  <div
+                    class="pill"
+                    style="height: 58px; font-size: 11px; padding: 0 12px"
+                  >
+                    02) 신규 콘텐츠 및 서비스 기획 / 제안<br /><span
+                      class="yl b"
+                      >10팀 (61명)</span
+                    >
+                  </div>
+                  <div
+                    class="pill"
+                    style="height: 58px; font-size: 11px; padding: 0 12px"
+                  >
+                    03) 체험 · 실감형 인터랙티브 콘텐츠 구현 / 전시<br /><span
+                      class="yl b"
+                      >4팀 (30명)</span
+                    >
+                  </div>
+                  <div
+                    class="pill"
+                    style="height: 58px; font-size: 11px; padding: 0 12px"
+                  >
+                    04) 영상부문<br /><span class="yl b">2팀 (13명)</span>
+                  </div>
+                  <p
+                    style="
+                      margin: 2px 0 0;
+                      font-size: 9px;
+                      color: var(--s-dim);
+                      text-align: center;
+                    "
+                  >
+                    팀편성표 기준 · 합계 112명
+                  </p>
+                </div>
+                <div style="font-size: 20px; color: var(--s-rule)">=</div>
+                <div style="flex: 1">
+                  <div
+                    class="pill"
+                    style="height: 132px; flex-direction: column; gap: 8px"
+                  >
+                    <div style="font-size: 18px; font-weight: 700">
+                      총 <span class="yl">17팀</span> &nbsp;·&nbsp; 팀편성
+                      <span class="yl">112명</span>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--s-dim)">
+                      졸업전시 대상 &nbsp;<span
+                        class="yl b"
+                        style="font-size: 15px"
+                        >115명</span
+                      >&nbsp;
+                      <span style="font-size: 10.5px"
+                        >(112명 + 조기취업 2명 + 배정 필요 1명)</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        font-size: 11.5px;
+                        color: var(--s-dim);
+                        padding-top: 7px;
+                        border-top: 1px solid #454545;
+                      "
+                    >
+                      조기취업 제외 &nbsp;실질 참여 대상 &nbsp;<span
+                        class="b"
+                        style="color: var(--s-white); font-size: 14px"
+                        >113명</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. 조직도 -->
+        <section class="slide" data-title="2. 졸준위 조직도 (2025 → 2026)">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle"><span class="n">2.</span>졸준위 조직도</h2>
+
+            <!-- 2025 -->
+            <div class="org" style="top: 150px">
+              <div class="org-label" style="top: 44px; color: #9a9a3a">
+                2025<br />졸준위<br />조직도
+              </div>
+              <div style="margin-right: 86px">
+                <div class="org-root">본부 (위원장, 총무)</div>
+                <div class="org-stem"></div>
+                <div class="org-bus"></div>
+                <div class="org-nodes">
+                  <div class="org-node">
+                    브랜딩팀
+                    <div class="org-sub">
+                      <div class="org-bus"></div>
+                      <div class="org-nodes">
+                        <div class="org-node">브랜딩</div>
+                        <div class="org-node">홍보</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="org-node">
+                    전시팀
+                    <div class="org-sub">
+                      <div class="org-bus"></div>
+                      <div class="org-nodes">
+                        <div class="org-node">전시</div>
+                        <div class="org-node yl">지원팀</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="org-node">오프닝팀</div>
+                  <div class="org-node">영상팀(DIMO)</div>
+                  <div class="org-node">하드웨어팀</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2026 -->
+            <div class="org" style="top: 318px">
+              <div class="org-label" style="top: 44px; color: var(--s-yellow)">
+                2026<br />졸준위<br />조직도
+              </div>
+              <div style="margin-right: 86px">
+                <div class="org-root">본부 (위원장, 총무)</div>
+                <div class="org-stem"></div>
+                <div class="org-bus"></div>
+                <div class="org-nodes">
+                  <div class="org-node">
+                    브랜딩팀
+                    <div class="org-sub">
+                      <div class="org-bus"></div>
+                      <div class="org-nodes">
+                        <div class="org-node">브랜딩</div>
+                        <div class="org-node">홍보</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="org-node">전시팀</div>
+                  <div class="org-node">하드웨어팀</div>
+                  <div class="org-node">오프닝팀</div>
+                  <div class="org-node">영상팀(DIMO)</div>
+                </div>
+                <div
+                  style="
+                    margin-top: 16px;
+                    padding: 9px 0;
+                    border: 1px dashed #7a7a2a;
+                    border-radius: 6px;
+                    background: rgba(120, 120, 30, 0.13);
+                    text-align: center;
+                    font-size: 10.5px;
+                    width: 30%;
+                    transform: translate(85%, -70%);
+                  "
+                >
+                  <span class="yl b">팀별 담당</span> :<br />&nbsp;&nbsp;
+                  졸업전시 17개 팀에서 각 1명씩 배정 (신설)
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. 조직도 변경사항 -->
+        <!-- <section class="slide" data-title="2. 조직도 변경사항">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle"><span class="n">2.</span>졸준위 조직도</h2>
+            <div class="veil"></div>
+            <div class="ov" style="top: 150px">
+              <h3>조직도 변경사항</h3>
+              <ol style="margin: 0; padding-left: 20px">
+                <li>
+                  기존 <span class="dim">전시팀 내부에 두던 지원팀</span>을
+                  폐지하고,
+                  <span class="yl b">졸업전시 17개 팀에서 각 1명씩 배정</span
+                  >하는 방식으로 전환
+                </li>
+                <li class="note" style="list-style: none; margin: 2px 0 14px">
+                  → 한 팀이 떠안던 설치·철거·서포트 업무를 17개 팀으로
+                  분산합니다.
+                </li>
+                <li>
+                  배정된 인원은
+                  <span class="b">소속 팀의 전시·하드웨어 담당</span>으로서
+                  졸준위와 상시 연락 창구가 됩니다.
+                </li>
+                <li class="note" style="list-style: none; margin: 2px 0 14px">
+                  → 졸준위 특정 인원에게 업무가 몰리던 구조를 제도로 해소하려는
+                  취지입니다.
+                </li>
+                <li>
+                  설치·철거 등
+                  <span class="b"
+                    >전 인원 동원이 필요한 업무는 종전대로 유지</span
+                  >합니다.
+                  <span class="dim"
+                    >(서약서 &lsquo;졸업준비위원회 참여 및 협조
+                    의무&rsquo;)</span
+                  >
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section> -->
+
+        <!-- 5. 졸준위 팀 구성 -->
+        <section class="slide" data-title="3. 졸준위 팀 구성">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle"><span class="n">3.</span>졸준위 팀 구성</h2>
+            <div class="body" style="top: 142px">
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(4, 1fr);
+                  gap: 10px;
+                "
+              >
+                <div class="card">
+                  <h4>본부</h4>
+                  <p style="color: var(--s-white); margin-bottom: 9px">
+                    위원장 : 유기상<br />총무 : 권나영<span class="dim"
+                      style="font-weight: 400"
+                      > (브랜딩팀 겸임)</span
+                    > · 이준
+                  </p>
+                  <ul>
+                    <li>졸업전시 총괄</li>
+                    <li>각 팀 진행상황 파악</li>
+                    <li>예산 · 물품 결제</li>
+                  </ul>
+                </div>
+                <div class="card">
+                  <h4>브랜딩팀</h4>
+                  <p style="color: var(--s-white); margin-bottom: 9px">
+                    팀장 : 이한숲
+                  </p>
+                  <ul>
+                    <li>전시 콘셉트 · 콘텐츠</li>
+                    <li>각 팀 촬영</li>
+                    <li>홍보 플랫폼 운영</li>
+                  </ul>
+                </div>
+                <div class="card">
+                  <h4>전시팀</h4>
+                  <p style="color: var(--s-white); margin-bottom: 9px">
+                    팀장 : 정유민
+                  </p>
+                  <ul>
+                    <li>전시 배치도 제작</li>
+                    <li>부스 공간 · 물품 설치</li>
+                    <li>전시장 청소 · 마감</li>
+                  </ul>
+                </div>
+                <div class="card">
+                  <h4>영상팀 (DIMO)</h4>
+                  <p style="color: var(--s-white); margin-bottom: 9px">
+                    팀장 : 이혜윤
+                  </p>
+                  <ul>
+                    <li>인터뷰 · 오프닝 촬영</li>
+                    <li>오프닝 영상 제작</li>
+                  </ul>
+                </div>
+                <div class="card">
+                  <h4>오프닝팀</h4>
+                  <p style="color: var(--s-white); margin-bottom: 9px">
+                    팀장 : 김준아
+                  </p>
+                  <ul>
+                    <li>오프닝 행사 기획</li>
+                    <li>물품 구매</li>
+                    <li>대본 · 사회</li>
+                  </ul>
+                </div>
+                <div class="card">
+                  <h4>하드웨어팀</h4>
+                  <p style="color: var(--s-white); margin-bottom: 9px">
+                    팀장 : 권민재
+                  </p>
+                  <ul>
+                    <li>기자재 조사</li>
+                    <li>콘센트 · 비품 점검</li>
+                    <li>팀별 사용 기기 조사</li>
+                  </ul>
+                </div>
+                <div class="card hi" style="grid-column: span 2">
+                  <h4>
+                    팀별 전시담당 &nbsp;<span
+                      style="font-weight: 400; color: var(--s-dim)"
+                      >(2026 신설)</span
+                    >
+                  </h4>
+                  <p style="color: var(--s-white)">
+                    졸업전시 17개 팀에서 각
+                    <span class="yl b">1명씩 배정</span> : 소속 팀을 대표해 전시
+                    · 하드웨어 업무를 분담하고 졸준위와 상시 소통합니다.
+                  </p>
+                  <p style="margin-top: 7px">
+                    ※ 졸업전시 참여자로서의 기본 업무에 해당하며, 역할 범위를
+                    명시하여 무제한으로 동원되지 않도록 합니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. 졸준위 최종 명단 -->
+        <section class="slide" data-title="4. 졸준위 최종 명단">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle"><span class="n">4.</span>졸준위 최종 명단</h2>
+            <div class="body" style="top: 126px">
+              <table class="t big">
+                <tr>
+                  <th style="width: 104px">구분</th>
+                  <th style="width: 132px">팀장</th>
+                  <th>팀원</th>
+                  <th class="c" style="width: 62px">인원</th>
+                </tr>
+                <tr>
+                  <td class="yl b">본부</td>
+                  <td class="b" style="color: var(--s-white)">
+                    위원장 · 유기상
+                  </td>
+                  <td>
+                    총무 · 권나영<span class="dim">(브랜딩팀 겸임)</span> · 이 준
+                  </td>
+                  <td class="c yl b">2명</td>
+                </tr>
+                <tr>
+                  <td class="yl b">브랜딩팀</td>
+                  <td class="b" style="color: var(--s-white)">이한숲</td>
+                  <td>
+                    권나영 · 주시원 · 양유빈 · 서예현 · 이승연 · 정다은<span
+                      class="dim"
+                      >(24학번)</span
+                    >
+                    · 정유진
+                  </td>
+                  <td class="c yl b">8명</td>
+                </tr>
+                <tr>
+                  <td class="yl b">전시팀</td>
+                  <td class="b" style="color: var(--s-white)">정유민</td>
+                  <td>
+                    최승진 · 온서영 · 김유란 · 이주빈 · 김규민 · 장현진 · 정서영
+                  </td>
+                  <td class="c yl b">8명</td>
+                </tr>
+                <tr>
+                  <td class="yl b">하드웨어팀</td>
+                  <td class="b" style="color: var(--s-white)">권민재</td>
+                  <td>최송주 · 이유정 · 김다윤</td>
+                  <td class="c yl b">4명</td>
+                </tr>
+                <tr>
+                  <td class="yl b">
+                    영상팀
+                    <span class="dim" style="font-weight: 400">(DIMO)</span>
+                  </td>
+                  <td class="b" style="color: var(--s-white)">이혜윤</td>
+                  <td>손예찬 · 정시진 · 정혜진</td>
+                  <td class="c yl b">4명</td>
+                </tr>
+                <tr>
+                  <td class="yl b">오프닝팀</td>
+                  <td class="b" style="color: var(--s-white)">김준아</td>
+                  <td>정다은<span class="dim">(25학번)</span> · 이한별 · 이수영</td>
+                  <td class="c yl b">4명</td>
+                </tr>
+                <tr class="sum">
+                  <td class="yl">합계</td>
+                  <td colspan="2" class="dim" style="font-weight: 400">
+                    본부 2 · 브랜딩 8 · 전시 8 · 하드웨어 4 · 영상 4 · 오프닝 4
+                  </td>
+                  <td class="c yl" style="font-size: 13px">30명</td>
+                </tr>
+              </table>
+
+              <div
+                style="
+                  display: flex;
+                  gap: 26px;
+                  margin-top: 16px;
+                  font-size: 10px;
+                  color: var(--s-dim);
+                  line-height: 1.75;
+                "
+              >
+                <span
+                  >※ 본부 지도교수 &nbsp;<span
+                    class="b"
+                    style="color: var(--s-white)"
+                    >최미선 교수님</span
+                  >
+                  &nbsp;·&nbsp; 팀별 지도교수 배정은 학과회의 결정 예정</span
+                >
+                <span
+                  >※ 1학년 졸준위는
+                  <span class="b" style="color: var(--s-white)"
+                    >개강 후 모집</span
+                  >
+                  예정</span
+                >
+                <span
+                  >※ 예비팀 :&nbsp; 졸준위 외 졸업전시 참여 2학년 전원
+                  <span class="dim"
+                    >(서약서 &lsquo;참여 및 협조 의무&rsquo;)</span
+                  ></span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. 올해 새롭게 적용하는 기준 -->
+        <section class="slide" data-title="5. 올해 새롭게 적용하는 기준">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle">
+              <span class="n">5.</span>올해 새롭게 적용하는 기준 · 사항
+            </h2>
+            <div class="body" style="top: 140px">
+              <p style="margin: 0 0 16px; font-size: 11px; color: var(--s-dim)">
+                작년 운영에서 확인된 <span class="yl">업무 편중</span>과
+                <span class="yl">참여 유인 부족</span>을 제도로 해결하는 데
+                초점을 두었습니다.
+              </p>
+              <div style="display: flex; gap: 12px">
+                <div class="card" style="flex: 1">
+                  <h4>① 수강생 전원 팀 프로젝트 이행 및 협력 서약서 제출</h4>
+                  <p style="color: var(--s-white)">
+                    졸업작품 진행에 필요한
+                    <span class="b">책임과 이행 기준을 사전 명확화</span>
+                  </p>
+                  <ul style="margin-top: 9px">
+                    <li>팀 프로젝트 참여 및 협력 의무 명시</li>
+                    <li>역할 · 일정 · 업무에 대한 책임 기준 설정</li>
+                    <li>불이행 시 조치 기준을 사전 고지</li>
+                    <li>구성원 간 책임과 역할의 명확화</li>
+                  </ul>
+                </div>
+                <div class="card" style="flex: 1">
+                  <h4>② 졸업준비위원 운영 개편</h4>
+                  <p style="color: var(--s-white)">
+                    수강생 전원의 졸업준비위원화 →
+                    <span class="b">팀별 전시담당자(17명)</span>지정
+                  </p>
+                  <ul style="margin-top: 9px">
+                    <li>수강생 전원은 졸업전시 준비의 책임과 의무를 지닌다.</li>
+                    <li>졸업전시준비위원회는 선행 준비를 총괄하고 책임진다.</li>
+                    <li>졸준위 소수 인원의 독박 업무 해소</li>
+                    <li>팀마다 책임자가 지정되어 연락 창구 명확화</li>
+                    <li>설치 · 철거 전원 동원 원칙은 유지</li>
+                  </ul>
+                </div>
+                <div class="card" style="flex: 1">
+                  <h4>
+                    ③패널티 제도 도입 및 평가 & 반영
+                    <!-- <span style="font-weight: 400; color: var(--s-dim)"
+                      >(신규)</span -->
+                  </h4>
+                  <p style="color: var(--s-white)">
+                    요청 시점과 항목을
+                    <span class="b">학기 초에 미리 공개</span>
+                  </p>
+                  <ul style="margin-top: 9px">
+                    <li>제출물 · 참여 항목과 기한을 사전 고지</li>
+                    <li>Excel 팀별 체크보드에 이행 기록</li>
+                    <li>학기 말 평가에 반영</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. 회비 책정 절차 -->
+        <section class="slide" data-title="6. 회비 책정 절차 · 산출 공식">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle">
+              <span class="n">6.</span>회비 책정 절차 · 산출 공식
+            </h2>
+            <div class="body" style="top: 126px">
+              <div class="flow">
+                <div class="step" style="padding: 11px 12px">
+                  <span class="k">STEP 1</span
+                  ><span class="v">전시 관련<br />시세 조사</span>
+                </div>
+                <div class="arw">→</div>
+                <div class="step" style="padding: 11px 12px">
+                  <span class="k">STEP 2</span
+                  ><span class="v">졸준위<br />검토 (기한 9월 28일)</span>
+                </div>
+                <div class="arw">→</div>
+                <div class="step" style="padding: 11px 12px">
+                  <span class="k">STEP 3</span
+                  ><span class="v">학과회의<br />보고 (9월 29일)</span>
+                </div>
+                <div class="arw">→</div>
+                <div
+                  class="step"
+                  style="background: var(--s-card-hi); padding: 11px 12px"
+                >
+                  <span class="k">STEP 4</span
+                  ><span class="v"
+                    >회비 확정 (10월 6일 13:00) <br />(팀장 소집 회의를 통해
+                    예산안 결정)
+                  </span>
+                </div>
+              </div>
+
+              <div class="formula" style="margin-top: 12px; padding: 13px 20px">
+                <div class="eq" style="line-height: 1.65">
+                  인당 회비 &nbsp;=&nbsp;
+                  <span class="yl"
+                    >(총 소요 예산 &minus; 전시지원금 &minus;
+                    성과전시지원금)</span
+                  >
+                  &nbsp;&divide;&nbsp;
+                  <span class="yl">납부 대상 인원</span>
+                </div>
+                <div class="cap">
+                  납부 대상 인원 = 졸업전시 대상 115명 &minus; 조기취업 2명 =
+                  <b>113명</b>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px; margin-top: 11px">
+                <div class="card" style="flex: 1.15; padding: 13px 16px">
+                  <h4>산출 전 확정이 필요한 값</h4>
+                  <ul>
+                    <li>
+                      총 소요 예산 &nbsp;<span class="dim"
+                        >:&nbsp; 시세 조사 후 산정 (STEP 1)</span
+                      >
+                    </li>
+                    <li>
+                      납부 대상 인원 &nbsp;<span class="yl b">113명</span>
+                      &nbsp;<span class="dim"
+                        >:&nbsp; 대상 115명 중 조기취업 2명 제외 (캡스톤 학점
+                        대체로 미수강)</span
+                      >
+                    </li>
+                  </ul>
+                  <p style="margin-top: 5px">
+                    ※ 전공심화 과정은 이번 편성에서 제외되어 납부 대상에
+                    포함되지 않습니다.
+                  </p>
+                </div>
+                <div class="card" style="flex: 1; padding: 13px 16px">
+                  <h4>참고 · 연도별 실적</h4>
+                  <table class="t tight">
+                    <tr>
+                      <th>연도</th>
+                      <th class="c">인당 회비</th>
+                      <th class="c">납부</th>
+                      <th class="c">잔여금</th>
+                    </tr>
+                    <tr>
+                      <td>2023</td>
+                      <td class="c">70,000원</td>
+                      <td class="c">93명</td>
+                      <td class="c dim">·</td>
+                    </tr>
+                    <tr>
+                      <td>2024</td>
+                      <td class="c">45,000원</td>
+                      <td class="c">103명</td>
+                      <td class="c">339,720원</td>
+                    </tr>
+                    <tr>
+                      <td>2025</td>
+                      <td class="c">60,000원</td>
+                      <td class="c">120명</td>
+                      <td class="c yl">0원</td>
+                    </tr>
+                    <tr>
+                      <td class="yl b">2026</td>
+                      <td class="c yl">산정 예정</td>
+                      <td class="c yl b">113명</td>
+                      <td class="c dim">·</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. 패널티 -->
+        <section class="slide" data-title="7. 패널티 적용 기준">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle">
+              <span class="n">7.</span>패널티 적용 기준을 위한 체크리스트
+              <!-- <span style="font-size: 12px; color: var(--s-dim)"
+                >· 서약서 &lsquo;불이행 시 조치&rsquo;</span
+              > -->
+            </h2>
+            <!-- <div class="body" style="top: 142px">
+              <div style="display: flex; gap: 12px">
+                <div class="card" style="flex: 1">
+                  <h4>1단계 · 주의</h4>
+                  <p style="color: var(--s-white)">
+                    과업 지연, 회의 무단 불참 등 경미한 불이행
+                  </p>
+                  <ul style="margin-top: 9px">
+                    <li>지도교수 면담 및 구두 경고</li>
+                    <li>조치 내용을 기록으로 보관</li>
+                  </ul>
+                </div>
+                <div class="card" style="flex: 1">
+                  <h4>2단계 · 경고</h4>
+                  <p style="color: var(--s-white)">
+                    1단계 조치 후에도 동일 불이행이 반복될 때
+                  </p>
+                  <ul style="margin-top: 9px">
+                    <li>서면 경고</li>
+                    <li>졸업작품 평가 중 협업 · 성실도 항목 감점</li>
+                  </ul>
+                </div>
+                <div class="card" style="flex: 1">
+                  <h4>3단계 · 조치</h4>
+                  <p style="color: var(--s-white)">
+                    무단 이탈 · 담당 과업 장기 미이행으로 결과물에 치명적 차질
+                  </p>
+                  <ul style="margin-top: 9px">
+                    <li>학과 방침에 따라 평가 불합격 및 재이수 조치 가능</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="card hi" style="margin-top: 13px">
+                <h4>
+                  적용 범위 · 대체 인원
+                  <span style="font-weight: 400; color: var(--s-dim)"
+                    >(팀 단위 책임)</span
+                  >
+                </h4>
+                <ul style="columns: 2; column-gap: 26px">
+                  <li>
+                    졸업전시 참여자 <span class="b">전원</span>에게 사전 공지된
+                    전시 운영 업무에 동일 적용
+                  </li>
+                  <li>
+                    인원 차출과 참여 이행은
+                    <span class="yl b">팀 단위로 책임</span>집니다
+                  </li>
+                  <li>
+                    차출 인원이 참여 불가한 경우
+                    <span class="b">같은 팀의 다른 인원이 대체 참여</span>
+                    (사전에 졸준위 통보)
+                  </li>
+                  <li>
+                    대체 인원 없이 불참한 경우
+                    <span class="b">해당 팀의 불이행</span>으로 처리
+                  </li>
+                </ul>
+              </div>
+              <p style="margin: 12px 0 0; font-size: 10px; color: var(--s-dim)">
+                ※ 평가 반영은 <span class="yl b">학과 승인 완료</span> 사항으로,
+                협조 체크리스트의 이행 기록을 근거로 졸업작품 평가에 반영합니다.
+                기준은 학기 초에 사전 고지합니다.
+              </p>
+            </div> -->
+            <div
+              class="wrap"
+              style="
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                margin-top: 12px;
+                justify-content: right;
+              "
+            >
+              <img
+                src="졸업전시팀 협조 체크리스트1.jpg"
+                style="width: 45%; position: absolute; right: 0; top: 100px"
+              />
+              <img
+                src="졸업전시팀 협조 체크리스트2.jpg"
+                style="bottom: 5%; width: 60%; position: absolute; right: 30%"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. 전체 소집 -->
+        <section class="slide" data-title="8. 9/1 전체 소집 공지 항목">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle">
+              <span class="n">8.</span>전체 소집 공지 항목
+              <span style="font-size: 12px; color: var(--s-dim)"
+                >· 9월 1일(화) 12:30</span
+              >
+            </h2>
+            <div class="body" style="top: 136px">
+              <div class="flow" style="margin-bottom: 13px">
+                <div
+                  class="step"
+                  style="background: var(--s-card-hi); padding: 10px 12px"
+                >
+                  <span class="k">9월 1일 (화) 12:30</span
+                  ><span class="v"
+                    >전체 팀장 소집 <span class="dim"></span
+                  ></span>
+                </div>
+                <div class="arw">→</div>
+                <div class="step" style="padding: 10px 12px">
+                  <span class="k">9월 1일 (화) 13:00</span
+                  ><span class="v"
+                    >학과회의 <span class="dim">(본 보고)</span></span
+                  >
+                </div>
+                <div class="arw">→</div>
+                <div class="step" style="padding: 10px 12px">
+                  <span class="k">10월 6일 (6주차) 13:00</span
+                  ><span class="v"
+                    >팀장 소집
+                    <span class="dim">(예산안 · 회비 확정)</span></span
+                  >
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px">
+                <div class="card" style="flex: 0 0 216px; padding: 13px 16px">
+                  <h4>소집 대상</h4>
+                  <ul>
+                    <li>졸업전시 <span class="b">프로젝트 팀장 17명</span></li>
+                    <li>졸준위 <span class="b">팀장 전원</span></li>
+                  </ul>
+                  <h4 style="margin-top: 13px">당일 확정 · 확인 사항</h4>
+                  <ul>
+                    <li>
+                      <span class="yl b">전시 · 하드웨어 담당 17명</span> 명단
+                    </li>
+                    <li>
+                      팀 <span class="b">미배정 1명</span> 배정 후보
+                      <span class="dim">(윤**)</span>
+                    </li>
+                    <li><span class="b">수강신청 미이행 1명</span> 확인</li>
+                  </ul>
+                </div>
+                <div class="card" style="flex: 1; padding: 13px 16px">
+                  <h4>
+                    공지 항목
+                    <span style="font-weight: 400; color: var(--s-dim)"
+                      >(12:30 ~ 13:00)</span
+                    >
+                  </h4>
+                  <ol style="margin: 0; padding-left: 15px">
+                    <li style="font-size: 9.5px; line-height: 1.85">
+                      <span class="b">졸준위 소개</span> :&nbsp; 조직 구성과
+                      팀별 담당 업무 안내
+                    </li>
+                    <li style="font-size: 9.5px; line-height: 1.85">
+                      <span class="yl b">공지 확인 표시 의무화</span> :&nbsp;
+                      졸준위 · 위원장 공지에 반드시 확인 표시로 회신
+                    </li>
+                    <li style="font-size: 9.5px; line-height: 1.85">
+                      <span class="yl b"
+                        >전시 · 하드웨어 담당 팀별 1명 지정</span
+                      >
+                    </li>
+                    <li style="font-size: 9.5px; line-height: 1.85">
+                      패널티 적용 기준과
+                      <span class="b">평가 반영 방법</span> 사전 고지
+                      <span class="dim"
+                        >(3단계 조치 · 대체 인원 규정 포함)</span
+                      >
+                    </li>
+                    <li style="font-size: 9.5px; line-height: 1.85">
+                      회비 책정 <span class="b">절차</span> 안내 :&nbsp; 시세
+                      조사 → 졸준위 검토 → 학과회의 보고 → 확정
+                    </li>
+                    <li style="font-size: 9.5px; line-height: 1.85">
+                      졸준위 모집 시 안내한
+                      <span class="b">참여 혜택</span> 관련 후속 방안 안내
+                    </li>
+                    <li style="font-size: 9.5px; line-height: 1.85">
+                      <span class="b">예산안 결정 일정</span> :&nbsp;
+                      <span class="yl b">10월 6일(6주차) 13:00</span> 팀장 소집
+                      회의에서 예산안 확정 후 회비 책정
+                    </li>
+                  </ol>
+                </div>
+              </div>
+
+              <!-- <div class="card hi" style="margin-top: 12px; padding: 11px 16px">
+                <p style="color: var(--s-white)">
+                  ※ 소집이 <span class="yl b">본 학과회의 30분 전</span>에
+                  열리므로, 당일 확정 전달은
+                  <span class="b">담당자 지정과 협조 의무 고지</span>까지이며,
+                  패널티의 평가 반영은
+                  <span class="b">학과회의 심의 후 확정</span>임을 명시해
+                  안내합니다.
+                </p>
+              </div> -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. 운영 원칙 -->
+        <section class="slide" data-title="9. 졸준위 운영 원칙">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <h2 class="stitle"><span class="n">9.</span>졸준위 운영 원칙</h2>
+            <div class="body" style="top: 158px">
+              <div class="card" style="padding: 34px 44px">
+                <ol style="margin: 0; padding-left: 16px">
+                  <li style="font-size: 12px; line-height: 2.6">
+                    졸준위 전체 회의는 졸준위원장 재량으로 개최된다.
+                  </li>
+                  <li style="font-size: 12px; line-height: 2.6">
+                    위원장은 모든 팀 회의에 필수로 참여하여 각 팀의 상황을
+                    파악한다.
+                  </li>
+                  <li style="font-size: 12px; line-height: 2.6">
+                    주마다 각 팀 회의 일정을 잡고, 진행상황을 정리하여
+                    학과회의에 맞춰 조교님께 전달한다.
+                    <span class="dim" style="font-size: 10.5px"
+                      >(위원장 · 총무 · 팀장도 학과회의에 참여하게 될 수
+                      있음)</span
+                    >
+                  </li>
+                  <li style="font-size: 12px; line-height: 2.6">
+                    각 팀 팀장들은 팀원 · 지도 교수님과의 소통을 지속적으로
+                    진행한다.
+                  </li>
+                  <li style="font-size: 12px; line-height: 2.6">
+                    각 팀 일정 진행은 기획 완료 후 지도 교수님의 허락 하에
+                    진행한다.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. 마무리 -->
+        <section class="slide" data-title="마무리">
+          <div class="canvas">
+            <div class="hd">
+              <span>Digital Media Design</span><span>2026. 09. 01</span>
+            </div>
+            <div class="end-line">
+              2026 졸업전시가 모두에게 좋은 경험으로 남을 수 있도록 최선을
+              다하겠습니다. 감사합니다 !
+            </div>
+          </div>
+        </section>
+
+        <button class="zone prev" aria-label="이전 슬라이드"></button>
+        <button class="zone next" aria-label="다음 슬라이드"></button>
+      </div>
+    </div>
+
+    <div id="progress"></div>
+
+    <div id="bar">
+      <button class="btn" id="btnPrev">&#8592;</button>
+      <span id="counter"><b>1</b> / 12</span>
+      <button class="btn" id="btnNext">&#8594;</button>
+      <span class="title"><b id="curTitle"></b></span>
+      <button class="btn" id="btnOverview">개요 (O)</button>
+      <button class="btn" id="btnFull">전체화면 (F)</button>
+    </div>
+
+    <div id="overview">
+      <h2>슬라이드 개요 · 클릭하면 이동, ESC로 닫기</h2>
+      <div id="grid"></div>
+    </div>
+
+    <script>
+      (function () {
+        var slides = Array.prototype.slice.call(
+          document.querySelectorAll('.slide')
+        );
+        var total = slides.length;
+        var idx = 0;
+
+        var counter = document.getElementById('counter');
+        var curTitle = document.getElementById('curTitle');
+        var progress = document.getElementById('progress');
+        var overview = document.getElementById('overview');
+        var frame = document.getElementById('frame');
+        var grid = document.getElementById('grid');
+
+        // 썸네일은 본문을 복제해 생성한다 (본문을 고치면 그대로 반영됨)
+        slides.forEach(function (s, i) {
+          var b = document.createElement('button');
+          b.className = 'thumb';
+          b.dataset.go = i + 1;
+          var box = document.createElement('div');
+          box.className = 'thumb-canvas';
+          box.appendChild(s.querySelector('.canvas').cloneNode(true));
+          var meta = document.createElement('span');
+          meta.className = 'thumb-meta';
+          meta.innerHTML = '<b>' + (i + 1) + '</b> ' + (s.dataset.title || '');
+          b.appendChild(box);
+          b.appendChild(meta);
+          b.onclick = function () {
+            go(i);
+            overview.classList.remove('open');
+          };
+          grid.appendChild(b);
+        });
+        var thumbs = Array.prototype.slice.call(
+          document.querySelectorAll('.thumb')
+        );
+
+        // 960x540 캔버스를 프레임/썸네일 크기에 맞춰 배율 조정
+        function fit() {
+          var w = frame.clientWidth;
+          if (w) document.documentElement.style.setProperty('--s', w / 960);
+          var box = document.querySelector('.thumb-canvas');
+          if (box && box.clientWidth) {
+            document.documentElement.style.setProperty(
+              '--ts',
+              box.clientWidth / 960
+            );
+          }
+        }
+        window.addEventListener('resize', fit);
+        fit();
+
+        function render() {
+          slides.forEach(function (s, i) {
+            s.classList.toggle('active', i === idx);
+          });
+          thumbs.forEach(function (t, i) {
+            t.classList.toggle('current', i === idx);
+          });
+          counter.innerHTML = '<b>' + (idx + 1) + '</b> / ' + total;
+          curTitle.textContent = slides[idx].dataset.title || '';
+          progress.style.width = ((idx + 1) / total) * 100 + '%';
+          try {
+            localStorage.setItem('jjw-brief', String(idx));
+          } catch (e) {}
+          if (location.hash !== '#' + (idx + 1))
+            history.replaceState(null, '', '#' + (idx + 1));
+        }
+        function go(n) {
+          idx = Math.max(0, Math.min(total - 1, n));
+          render();
+        }
+        function next() {
+          go(idx + 1);
+        }
+        function prev() {
+          go(idx - 1);
+        }
+
+        document.getElementById('btnNext').onclick = next;
+        document.getElementById('btnPrev').onclick = prev;
+        document.querySelector('.zone.next').onclick = next;
+        document.querySelector('.zone.prev').onclick = prev;
+        document.getElementById('btnOverview').onclick = function () {
+          overview.classList.toggle('open');
+          fit();
+        };
+
+        function toggleFull() {
+          if (!document.fullscreenElement)
+            document.documentElement.requestFullscreen().catch(function () {});
+          else document.exitFullscreen();
+        }
+        document.getElementById('btnFull').onclick = toggleFull;
+        document.addEventListener('fullscreenchange', function () {
+          document.body.classList.toggle(
+            'presenting',
+            !!document.fullscreenElement
+          );
+          fit();
+        });
+
+        document.addEventListener('keydown', function (e) {
+          var k = e.key;
+          if (k === 'Escape') {
+            overview.classList.remove('open');
+            return;
+          }
+          if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') {
+            e.preventDefault();
+            next();
+          } else if (k === 'ArrowLeft' || k === 'PageUp') {
+            e.preventDefault();
+            prev();
+          } else if (k === 'Home') {
+            go(0);
+          } else if (k === 'End') {
+            go(total - 1);
+          } else if (k === 'o' || k === 'O') {
+            overview.classList.toggle('open');
+            fit();
+          } else if (k === 'f' || k === 'F') {
+            toggleFull();
+          }
+        });
+
+        var start = 0;
+        var h = parseInt(location.hash.replace('#', ''), 10);
+        if (h >= 1 && h <= total) start = h - 1;
+        else {
+          try {
+            var sv = parseInt(localStorage.getItem('jjw-brief'), 10);
+            if (sv >= 0 && sv < total) start = sv;
+          } catch (e) {}
+        }
+        go(start);
+      })();
+    </script>
+  </body>
+</html>
