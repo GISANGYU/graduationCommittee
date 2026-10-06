@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>전시 공간 브리핑 보고</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --ink: #1b1e26; --sub: #5c6472; --line: #e2e5ec;
+    --accent: #1e3a8a; --accent2: #2563eb; --accent-soft: #eef2ff;
+    --must: #be123c; --must-soft: #fff1f3; --pref: #b45309; --pref-soft: #fff7ed;
+    --ok: #0f766e; --ok-soft: #e3f6f1; --muted: #f1f2f5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif; line-height: 1.6; word-break: keep-all; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px 64px; }
+  header { padding: 40px 0 20px; }
+  header .k { font-size: 14px; font-weight: 800; color: var(--accent2); letter-spacing: 0.04em; }
+  header h1 { font-size: 30px; margin: 6px 0 8px; letter-spacing: -0.02em; }
+  header p { margin: 0; color: var(--sub); font-size: 15px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 13.5px; color: var(--sub); }
+  .meta b { color: var(--ink); }
+  h2 { font-size: 20px; margin: 36px 0 12px; display: flex; align-items: center; gap: 10px; }
+  h2 .n { display: inline-flex; width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 15px; align-items: center; justify-content: center; }
+  .lead { color: var(--sub); font-size: 14.5px; margin: 0 0 12px; }
+  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (min-width: 720px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .tile .t { font-size: 13px; color: var(--sub); font-weight: 700; }
+  .tile .v { font-size: 30px; font-weight: 900; margin-top: 2px; }
+  .tile .v small { font-size: 15px; margin-left: 2px; }
+  .tile.must .v { color: var(--must); } .tile.pref .v { color: var(--pref); } .tile.ok .v { color: var(--ok); }
+  .callout { background: var(--accent-soft); border-radius: 14px; padding: 14px 18px; font-size: 14.5px; margin-top: 12px; }
+  .callout.warn { background: var(--pref-soft); }
+  .callout b.lbl { display: block; color: var(--accent); font-size: 13px; margin-bottom: 2px; }
+  .callout.warn b.lbl { color: var(--pref); }
+  .tw { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 760px; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  thead th { background: var(--muted); color: var(--sub); font-weight: 800; font-size: 12.5px; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.c, th.c { text-align: center; }
+  td.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill.must { background: var(--must-soft); color: var(--must); }
+  .pill.pref { background: var(--pref-soft); color: var(--pref); }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.g { background: var(--muted); color: var(--sub); }
+  .cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 860px) { .cards { grid-template-columns: 1fr 1fr; } }
+  .team { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+  .team .hd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .team .no { font-size: 13px; font-weight: 900; color: #fff; background: var(--accent); border-radius: 8px; padding: 2px 9px; }
+  .team .nm { font-size: 18px; font-weight: 900; }
+  .team .ld { font-size: 13px; color: var(--sub); }
+  .team dl { display: grid; grid-template-columns: 82px 1fr; gap: 6px 10px; margin: 12px 0 0; font-size: 13.5px; }
+  .team dt { color: var(--sub); font-weight: 800; }
+  .team dd { margin: 0; }
+  .team .why { margin-top: 10px; font-size: 13.5px; background: var(--muted); border-radius: 10px; padding: 10px 12px; }
+  .team .chk { margin-top: 8px; font-size: 13px; color: var(--pref); font-weight: 700; }
+  .team.must { border-top: 4px solid var(--must); }
+  .team.pref { border-top: 4px solid var(--pref); }
+  .space .cnt { font-weight: 900; color: var(--must); }
+  ol.tight, ul.tight { margin: 6px 0 0; padding-left: 20px; font-size: 14.5px; }
+  ol.tight li, ul.tight li { margin: 3px 0; }
+  footer { margin-top: 40px; font-size: 12.5px; color: var(--sub); border-top: 1px solid var(--line); padding-top: 14px; }
+  @media print { body { background: #fff; } .team, .tile, .tw { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="k">2026 졸업준비위원회 · 전시 공간 배정</div>
+  <h1>전시 공간 배정 브리핑 진행 보고</h1>
+  <p>장비 · 공간 · 예산 통합 설문(10/1~10/4) 결과, 별도 전시 공간을 요청한 팀이 사용 가능한 공간보다 많은 것으로 확인되었습니다. 이에 요청 팀이 사용 장비 · 작품 콘셉트 · 공간 필요성을 교수님께 직접 브리핑하고, 교수님께서 공간 사용을 결정하시는 방식으로 진행하고자 합니다.</p>
+  <div class="meta">
+    <span><b>기준</b> 설문 5-1 "별도 공간이 필요한가요?"</span>
+    <span><b>응답</b> 17팀 전원 제출</span>
+    <span><b>보고</b> 졸업준비위원장 유기상 · 2026.10.06</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="n">1</span>설문 응답 현황</h2>
+  <div class="tiles">
+    <div class="tile"><div class="t">응답 팀</div><div class="v">17<small>팀</small></div></div>
+    <div class="tile must"><div class="t">별도 공간 필수</div><div class="v">7<small>팀</small></div></div>
+    <div class="tile pref"><div class="t">별도 공간 희망</div><div class="v">2<small>팀</small></div></div>
+    <div class="tile ok"><div class="t">크리에이티브 스튜디오 부스</div><div class="v">8<small>팀</small></div></div>
+  </div>
+  <div class="callout">
+    <b class="lbl">브리핑 대상</b>
+    별도 공간을 요청한 <b>9팀</b> (필수 7팀 · 희망 2팀). 희망 2팀은 브리핑 참여 의사를 확인하여 확정할 예정입니다.
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">2</span>브리핑 대상팀</h2>
+  <p class="lead">희망 공간은 각 팀의 설문 응답(1 · 2순위)을, 예상 비용은 각 팀이 제출한 금액을 기재하였습니다.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>팀장(작품명)</th><th>구분</th><th>희망 공간 (1순위 / 2순위)</th><th class="c">암전</th><th class="c">소리</th><th class="c">동시 체험</th><th class="r">예상 비용</th></tr></thead>
+      <tbody>
+        <tr><td><b>이한숲(브랜딩)</b></td><td><span class="pill must">필수</span></td><td>UT실</td><td class="c">불필요</td><td class="c">없음</td><td class="c">4명</td><td class="r">550,000</td></tr>
+        <tr><td><b>손예찬(페럴렉스)</b></td><td><span class="pill must">필수</span></td><td>UIUX실 / 피지컬컴퓨팅스튜디오</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">8명</td><td class="r"><span class="pill g">산정 중</span></td></tr>
+        <tr><td><b>조강희(말모이)</b></td><td><span class="pill must">필수</span></td><td>403B</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">1명</td><td class="r">111,210</td></tr>
+        <tr><td><b>홍성주(공명체)</b></td><td><span class="pill must">필수</span></td><td>복도 미디어월</td><td class="c">불필요</td><td class="c">스피커</td><td class="c">4명</td><td class="r">410,000</td></tr>
+        <tr><td><b>전영서(FEELD)</b></td><td><span class="pill must">필수</span></td><td>크리에이티브 스튜디오 미디어월 구역</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">3명</td><td class="r">840,000</td></tr>
+        <tr><td><b>정시진(인생정거장)</b></td><td><span class="pill must">필수</span></td><td>피지컬컴퓨팅스튜디오 / 5층 강의실</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">6명</td><td class="r">607,900</td></tr>
+        <tr><td><b>김우성(SeeSaw)</b></td><td><span class="pill must">필수</span></td><td>UIUX실 / UT실</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">10명</td><td class="r">466,000</td></tr>
+        <tr><td><b>김기현(PLEV)</b></td><td><span class="pill pref">희망</span></td><td>피지컬컴퓨팅스튜디오</td><td class="c">불필요</td><td class="c">스피커</td><td class="c">—</td><td class="r">361,900</td></tr>
+        <tr><td><b>김유란(HAELON)</b></td><td><span class="pill pref">희망</span></td><td>크리에이티브 스튜디오 부스 / UIUX실</td><td class="c">불필요</td><td class="c">없음</td><td class="c">4명</td><td class="r"><span class="pill g">확인 중</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">3</span>공간별 요청 현황</h2>
+  <p class="lead">각 팀의 1 · 2순위 희망 공간을 합산한 현황입니다.</p>
+  <div class="tw space">
+    <table style="min-width: 560px">
+      <thead><tr><th>공간</th><th class="c">요청 팀 수</th><th>1순위</th><th>2순위</th></tr></thead>
+      <tbody>
+        <tr><td><b>UIUX실</b></td><td class="c cnt">3</td><td>손예찬(페럴렉스) · 김우성(SeeSaw)</td><td>김유란(HAELON)</td></tr>
+        <tr><td><b>피지컬컴퓨팅스튜디오</b></td><td class="c cnt">3</td><td>김기현(PLEV) · 정시진(인생정거장)</td><td>손예찬(페럴렉스)</td></tr>
+        <tr><td><b>UT실</b></td><td class="c cnt">2</td><td>이한숲(브랜딩)</td><td>김우성(SeeSaw)</td></tr>
+        <tr><td>403B</td><td class="c">1</td><td>조강희(말모이)</td><td>—</td></tr>
+        <tr><td>5층 강의실</td><td class="c">1</td><td>—</td><td>정시진(인생정거장)</td></tr>
+        <tr><td>복도 미디어월</td><td class="c">1</td><td>홍성주(공명체)</td><td>—</td></tr>
+        <tr><td>크리에이티브 스튜디오 미디어월 구역</td><td class="c">1</td><td>전영서(FEELD)</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <b class="lbl">검토 사항</b>
+    UIUX실 · 피지컬컴퓨팅스튜디오 · UT실은 2~3팀의 요청이 중복됩니다. 403B · 복도 미디어월 · 크리에이티브 스튜디오 미디어월 구역은 요청 팀이 1팀이나, 일반 전시 공간이 아니므로 전시 사용 가능 여부에 대한 확인이 필요합니다.
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">4</span>팀별 요청 내용</h2>
+  <p class="lead">각 팀이 제출한 작품 형태 · 사용 장비 · 공간 조건 · 공간 필요 사유를 요약하였습니다.</p>
+
+  <h3 style="font-size: 16px; margin: 18px 0 10px; color: var(--must)">별도 공간 필수 · 7팀</h3>
+  <div class="cards">
+
+    <div class="team must">
+      <div class="hd"><span class="nm">이한숲(브랜딩)</span></div>
+      <dl>
+        <dt>형태</dt><dd>웹 · 영상 · 체험형 인터랙티브 · 설치물</dd>
+        <dt>장비</dt><dd>iMac 3대, 대형 TV 1대, 영수증 사진기 1대, 노트북(필요 시)</dd>
+        <dt>공간</dt><dd>방 하나 규모 · 암전 불필요 · 소리 없음</dd>
+        <dt>희망 공간</dt><dd>UT실</dd>
+      </dl>
+      <div class="why">사진 촬영 콘텐츠가 있어, 촬영 중 외부 관람객의 출입과 소음이 분리된 독립 공간이 필요함. 졸업전시의 정체성을 경험하는 체류형 공간으로 일반 작품 부스와 관람 방식이 다르며, 장비 면적 외에 시청 거리 · 대기 · 촬영 동선이 필요함.</div>
+    </div>
+
+    <div class="team must">
+      <div class="hd"><span class="nm">손예찬(페럴렉스)</span></div>
+      <dl>
+        <dt>형태</dt><dd>앱 · 웹 · 영상 · 체험형 인터랙티브 · VR/AR · 설치물</dd>
+        <dt>장비</dt><dd>차량 목업 1, 메타퀘스트 2, 프로젝터 · 스크린 1세트, 데스크톱 2, 대형 모니터 2, 스피커, 태블릿 3, 폴더블폰 1</dd>
+        <dt>공간</dt><dd>방 하나 규모(502B 정도) · 완전 암전 · 스피커 · 동시 8명</dd>
+        <dt>희망 공간</dt><dd>UIUX실 / 피지컬컴퓨팅스튜디오</dd>
+      </dl>
+      <div class="why">관람객이 사건 발생부터 현장 대응 · 지휘 · 인계까지 따라가는 체험형 전시임. 차량 목업 설치 공간, VR 체험 구역, 지휘통제실 빔 스크린 구역이 각각 독립된 장비 · 관람 거리 · 안전 동선을 필요로 하며, 외부 빛과 소음을 차단할 암전 또는 반개방형 공간이 필요함.</div>
+      <div class="chk">예상 비용: 대여 결제 방식 확인 후 산정 예정 (브리핑 전 제출 요청)</div>
+    </div>
+
+    <div class="team must">
+      <div class="hd"><span class="nm">조강희(말모이)</span><span class="ld">작성 최승진</span></div>
+      <dl>
+        <dt>형태</dt><dd>웹 · 미디어월 · 영상 · 체험형 인터랙티브 · 설치물</dd>
+        <dt>장비</dt><dd>프로젝터 1, 적외선 카메라 1, 조명 1, 노트북 1, 모니터 1, 스피커 3</dd>
+        <dt>공간</dt><dd>방 하나 규모 · 완전 암전 · 스피커 · 투사 거리 3m 이상</dd>
+        <dt>희망 공간</dt><dd>403B (강의실 내 고사양 · 대형 빔프로젝터 사용)</dd>
+      </dl>
+      <div class="why">벽면 리듬게임 투사와 적외선 카메라 손 제스처 인식을 위해 암전 환경과 투사 거리가 필요함. "체험 → 단어 기록 → 실물 나무 참여"로 이어지는 관람 동선과 나무 조형물 설치 구역을 인터랙션 구역과 분리해야 함.</div>
+    </div>
+
+    <div class="team must">
+      <div class="hd"><span class="nm">홍성주(공명체)</span></div>
+      <dl>
+        <dt>형태</dt><dd>웹 · 미디어월 · 키오스크 · 영상 · 체험형 인터랙티브 · 설치물</dd>
+        <dt>장비</dt><dd>미디어월(복도) 1, 키넥트 1, 햅틱 플로어 1(제작 예정), 데스크톱 1, 모니터 1, 키오스크 1, 스피커 1</dd>
+        <dt>공간</dt><dd>기본 부스보다 넓은 공간 · 암전 불필요 · 스피커</dd>
+        <dt>희망 공간</dt><dd>복도 미디어월</dd>
+      </dl>
+      <div class="why">관람객의 이동 · 위치 · 반응을 인식해 산호 생태계가 변화하는 콘텐츠로, 통행 자체가 체험이 되는 복도형 공간이 필요함. 대형 미디어월과 진동 발판을 연계해 시각 · 청각 · 촉각을 함께 전달함.</div>
+    </div>
+
+    <div class="team must">
+      <div class="hd"><span class="nm">전영서(FEELD)</span><span class="ld">작성 손서윤</span></div>
+      <dl>
+        <dt>형태</dt><dd>웹 · 미디어월 · 영상 · 체험형 인터랙티브 · 설치물</dd>
+        <dt>장비</dt><dd>데스크톱 3, 모니터 3, 스피커 3, 파티션 3, 아이소핑크 2 등</dd>
+        <dt>공간</dt><dd>방 하나 규모 · 완전 암전 · 스피커 · 일반 구역과 커튼 · 파티션으로 분리</dd>
+        <dt>희망 공간</dt><dd>크리에이티브 스튜디오 미디어월 구역</dd>
+      </dl>
+      <div class="why">전체 암전과 사운드 재생이 필수인 체험형 미디어 전시임. 안전상 암전 구역 내부에 소개 부스를 둘 수 없어, 미디어월 구역 옆 복도 출입문에서 커튼을 거쳐 체험 구역으로 입장하는 동선을 계획함. 주변 부스 배치 시 해당 동선 확보를 요청함.</div>
+    </div>
+
+    <div class="team must">
+      <div class="hd"><span class="nm">정시진(인생정거장)</span></div>
+      <dl>
+        <dt>형태</dt><dd>웹 · 영상 · 체험형 인터랙티브 · 설치물</dd>
+        <dt>장비</dt><dd>데스크톱 1, 프로젝터 1, 스피커 2, 마이크 1, 투사용 설치물</dd>
+        <dt>공간</dt><dd>방 하나 규모 · 완전 암전 · 스피커 · 투사 거리 3m 이상 · 설치물 1.5 × 1.95 × 3.9m</dd>
+        <dt>희망 공간</dt><dd>피지컬컴퓨팅스튜디오 / 5층 강의실</dd>
+      </dl>
+      <div class="why">빔프로젝터 투사 거리와 암전, 체험 중 주변 소음 차단이 필요함. 영상의 소리를 함께 감상해야 하므로 충분한 규모의 공간이 필요함. 전시 공간 · 예산에 대한 조속한 안내를 요청함.</div>
+    </div>
+
+    <div class="team must">
+      <div class="hd"><span class="nm">김우성(SeeSaw)</span></div>
+      <dl>
+        <dt>형태</dt><dd>웹 · 영상 · 체험형 인터랙티브 · 설치물 · 뮤직비디오 앨범</dd>
+        <dt>장비</dt><dd>빔프로젝터 1(100~120인치), 아이맥 2, 대형 모니터 2, 웹캠 2, 스피커 2, 레트로 사진기</dd>
+        <dt>공간</dt><dd>방 하나 규모 · 완전 암전 · 스피커 · 착석 관람 8명 이상 · 동시 10명</dd>
+        <dt>희망 공간</dt><dd>UIUX실 / UT실</dd>
+      </dl>
+      <div class="why">뮤직비디오 상영 · 인터랙티브 웹 · 앨범 브랜딩이 하나의 흐름으로 이어지는 미디어 전시임. 영상 화질을 위한 조도 통제, 음향 분리, 착석 관람을 위한 시청 · 투사 거리, 센서 체험 구역과 이동 동선의 분리, 콘텐츠 간 연속 관람을 위해 독립된 강의실이 필요함.</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 16px; margin: 24px 0 10px; color: var(--pref)">별도 공간 희망 · 2팀</h3>
+  <div class="cards">
+    <div class="team pref">
+      <div class="hd"><span class="nm">김기현(PLEV)</span></div>
+      <dl>
+        <dt>형태</dt><dd>앱 · 웹 · 키오스크 · 영상 · 설치물</dd>
+        <dt>장비</dt><dd>데스크톱 2, 모니터 2, 스탠딩 모니터 1, 스마트폰 1, 키오스크 1</dd>
+        <dt>공간</dt><dd>기본 부스보다 넓은 공간 · 암전 불필요 · 스피커</dd>
+        <dt>희망 공간</dt><dd>피지컬컴퓨팅스튜디오</dd>
+      </dl>
+      <div class="why">전시 규모에 맞는 여유 공간 확보를 희망함. (공간 제약 콘텐츠: 해당 없음으로 응답)</div>
+      <div class="chk">브리핑 참여 의사와 공간 필요 사유 추가 확인 예정</div>
+    </div>
+
+    <div class="team pref">
+      <div class="hd"><span class="nm">김유란(HAELON)</span><span class="ld">작성 김규민</span></div>
+      <dl>
+        <dt>형태</dt><dd>앱 · 웹 · 키오스크 · 영상 · 체험형 인터랙티브 · 설치물</dd>
+        <dt>장비</dt><dd>독립형 키오스크 2(가로 · 세로), 아이맥 1, 터치 모니터 1, 모니터 1, AI 글래스 1, 드론 모형 1, 노트북 2 등</dd>
+        <dt>공간</dt><dd>기본 부스보다 넓은 공간 · 암전 불필요 · 소리 없음</dd>
+        <dt>희망 공간</dt><dd>크리에이티브 스튜디오 부스 / UIUX실</dd>
+      </dl>
+      <div class="why">여러 기기를 하나의 서비스 흐름으로 보여주어 같은 구역에 배치해야 하며, 키오스크 전면 조작 · AI 글래스 착용 · 대기 동선이 필요함. <b>독립 공간 단독 사용은 필수가 아니며</b>, 크리에이티브 스튜디오 배정 시 넓고 연속된 구역을 희망함.</div>
+      <div class="chk">예상 비용 입력값 재확인 예정</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">5</span>크리에이티브 스튜디오 부스 전시 · 8팀</h2>
+  <p class="lead">별도 공간을 요청하지 않은 팀으로, 크리에이티브 스튜디오 부스 배치에서 검토합니다.</p>
+  <div class="tw">
+    <table style="min-width: 520px">
+      <thead><tr><th>팀장(작품명)</th><th>공간 관련 요청</th></tr></thead>
+      <tbody>
+        <tr><td>한수현(아키)</td><td>부스 인접 220V 전원 2구 이상</td></tr>
+        <tr><td>정서영(착!)</td><td>—</td></tr>
+        <tr><td>윤채원(COMPASS)</td><td>—</td></tr>
+        <tr><td>백귀리(오름 OREUM)</td><td>—</td></tr>
+        <tr><td>조윤정(emora)</td><td>—</td></tr>
+        <tr><td>곽효진(잘가계)</td><td>—</td></tr>
+        <tr><td>이준(POPING)</td><td>—</td></tr>
+        <tr><td>이채연(LIMEN)</td><td>본 전시는 정보관 8층 스튜디오에서 진행, 크리에이티브 스튜디오에서는 홍보용 웹 시연만 진행</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <b class="lbl">참고 · 이채연(LIMEN)</b>
+    이채연(LIMEN) 팀은 학과 외 공간인 정보관 8층 스튜디오에서 본 전시를 진행하므로, 디지털미디어디자인과 전시 공간 수요(별도 공간 요청)에는 포함하지 않았습니다. 크리에이티브 스튜디오에서는 작품 홍보를 위한 웹 시연 부스만 운영합니다.
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">6</span>브리핑 진행 계획 (안)</h2>
+  <div class="tw" style="padding: 16px 20px">
+    <ol class="tight" style="margin-top: 0">
+      <li><b>대상</b> · 별도 공간 요청 9팀 (희망 2팀은 참여 의사 확인 후 확정)</li>
+      <li><b>청취</b> · 학과장님 · 교수님 (졸업준비위원회는 일정 조율 · 자료 양식 안내 · 진행을 담당)</li>
+      <li><b>방식</b> · 모든 팀 동일한 시간 · 동일한 양식으로 발표 (팀당 발표 5분 + 질의응답 3분)</li>
+      <li><b>발표 내용</b> · 작품 콘셉트, 사용 장비(수량 · 크기 · 전력), 공간 필요 사유(암전 · 소리 · 면적 · 동선), 희망 공간(1 · 2순위)과 배치 계획, 희망 공간 배정이 어려울 경우의 대안</li>
+      <li><b>결정</b> · 브리핑 내용을 바탕으로 교수님께서 공간 사용을 결정하시며, 결과는 17팀에 일괄 공지합니다.</li>
+    </ol>
+  </div>
+  <div class="callout warn">
+    <b class="lbl">요청 사항</b>
+    ① 본 진행 방식에 대한 검토 · 승인 ② 브리핑 가능 일시 ③ 2026 졸업전시에 사용 가능한 공간 범위 확인
+  </div>
+</section>
+
+<footer>
+  2026 졸업준비위원회 · 계원예술대학교 디지털미디어디자인과 · 출처: 장비 · 공간 · 예산 통합 설문 응답(17팀)
+  <div style="margin-top: 6px">원본 응답 시트 · <a href="https://docs.google.com/spreadsheets/d/1bCSBd5VqFcXMopGf24QZ2LMLcbbiFhUYIl0-a3ePpQU/edit?gid=604726798#gid=604726798" target="_blank" rel="noopener" style="color: var(--accent2); font-weight: 700">장비 · 공간 · 예산 통합 설문 응답 (Google 스프레드시트)</a></div>
+</footer>
+
+</div>
+</body>
+</html>
