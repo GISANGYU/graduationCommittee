@@ -46,6 +46,10 @@
   .pill.pref { background: var(--pref-soft); color: var(--pref); }
   .pill.ok { background: var(--ok-soft); color: var(--ok); }
   .pill.g { background: var(--muted); color: var(--sub); }
+  .pill.cls { background: #f3e8ff; color: #7e22ce; }
+  tr.cls td:first-child { box-shadow: inset 4px 0 0 #a855f7; }
+  .callout.cls { background: #f3e8ff; }
+  .callout.cls b.lbl { color: #7e22ce; }
   .cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
   @media (min-width: 860px) { .cards { grid-template-columns: 1fr 1fr; } }
   .team { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
@@ -104,15 +108,19 @@
       <tbody>
         <tr><td><b>이한숲(브랜딩)</b></td><td><span class="pill must">필수</span></td><td>UT실</td><td class="c">불필요</td><td class="c">없음</td><td class="c">4명</td><td class="r">550,000</td></tr>
         <tr><td><b>손예찬(페럴렉스)</b></td><td><span class="pill must">필수</span></td><td>UIUX실 / 피지컬컴퓨팅스튜디오</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">8명</td><td class="r"><span class="pill g">산정 중</span></td></tr>
-        <tr><td><b>조강희(말모이)</b></td><td><span class="pill must">필수</span></td><td>403B</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">1명</td><td class="r">111,210</td></tr>
-        <tr><td><b>홍성주(공명체)</b></td><td><span class="pill must">필수</span></td><td>복도 미디어월</td><td class="c">불필요</td><td class="c">스피커</td><td class="c">4명</td><td class="r">410,000</td></tr>
-        <tr><td><b>전영서(FEELD)</b></td><td><span class="pill must">필수</span></td><td>크리에이티브 스튜디오 미디어월 구역</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">3명</td><td class="r">840,000</td></tr>
+        <tr class="cls"><td><b>조강희(말모이)</b> <span class="pill cls">심한수 교수님 반</span></td><td><span class="pill must">필수</span></td><td>4층 계단식 강의실(403B)</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">1명</td><td class="r">111,210</td></tr>
+        <tr class="cls"><td><b>홍성주(공명체)</b> <span class="pill cls">심한수 교수님 반</span></td><td><span class="pill must">필수</span></td><td>복도 미디어월</td><td class="c">불필요</td><td class="c">스피커</td><td class="c">4명</td><td class="r">410,000</td></tr>
+        <tr class="cls"><td><b>전영서(FEELD)</b> <span class="pill cls">심한수 교수님 반</span></td><td><span class="pill must">필수</span></td><td>크리에이티브 스튜디오 미디어월 구역</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">3명</td><td class="r">840,000</td></tr>
         <tr><td><b>정시진(인생정거장)</b></td><td><span class="pill must">필수</span></td><td>피지컬컴퓨팅스튜디오 / 5층 강의실</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">6명</td><td class="r">607,900</td></tr>
         <tr><td><b>김우성(SeeSaw)</b></td><td><span class="pill must">필수</span></td><td>UIUX실 / UT실</td><td class="c">완전 암전</td><td class="c">스피커</td><td class="c">10명</td><td class="r">466,000</td></tr>
         <tr><td><b>김기현(PLEV)</b></td><td><span class="pill pref">희망</span></td><td>피지컬컴퓨팅스튜디오</td><td class="c">불필요</td><td class="c">스피커</td><td class="c">—</td><td class="r">361,900</td></tr>
         <tr><td><b>김유란(HAELON)</b></td><td><span class="pill pref">희망</span></td><td>크리에이티브 스튜디오 부스 / UIUX실</td><td class="c">불필요</td><td class="c">없음</td><td class="c">4명</td><td class="r"><span class="pill g">확인 중</span></td></tr>
       </tbody>
     </table>
+  </div>
+  <div class="callout cls">
+    <b class="lbl">심한수 교수님 반 · 체험 · 실감형 인터랙티브 콘텐츠 구현 / 전시</b>
+    조강희(말모이) · 홍성주(공명체) · 전영서(FEELD) 3팀은 체험 · 실감형 인터랙티브 콘텐츠 구현 · 전시 반으로, 해당 반의 전시 특성에 따라 <b>미디어월 공간 2곳</b>(복도 미디어월 · 크리에이티브 스튜디오 미디어월 구역)과 <b>4층 계단식 강의실(403B, 빔프로젝터 필요)</b>을 요청하였습니다.
   </div>
 </section>
 
@@ -126,16 +134,16 @@
         <tr><td><b>UIUX실</b></td><td class="c cnt">3</td><td>손예찬(페럴렉스) · 김우성(SeeSaw)</td><td>김유란(HAELON)</td></tr>
         <tr><td><b>피지컬컴퓨팅스튜디오</b></td><td class="c cnt">3</td><td>김기현(PLEV) · 정시진(인생정거장)</td><td>손예찬(페럴렉스)</td></tr>
         <tr><td><b>UT실</b></td><td class="c cnt">2</td><td>이한숲(브랜딩)</td><td>김우성(SeeSaw)</td></tr>
-        <tr><td>403B</td><td class="c">1</td><td>조강희(말모이)</td><td>—</td></tr>
+        <tr class="cls"><td>4층 계단식 강의실(403B) · 빔프로젝터 필요 <span class="pill cls">심한수 교수님 반</span></td><td class="c">1</td><td>조강희(말모이)</td><td>—</td></tr>
         <tr><td>5층 강의실</td><td class="c">1</td><td>—</td><td>정시진(인생정거장)</td></tr>
-        <tr><td>복도 미디어월</td><td class="c">1</td><td>홍성주(공명체)</td><td>—</td></tr>
-        <tr><td>크리에이티브 스튜디오 미디어월 구역</td><td class="c">1</td><td>전영서(FEELD)</td><td>—</td></tr>
+        <tr class="cls"><td>복도 미디어월 <span class="pill cls">심한수 교수님 반</span></td><td class="c">1</td><td>홍성주(공명체)</td><td>—</td></tr>
+        <tr class="cls"><td>크리에이티브 스튜디오 미디어월 구역 <span class="pill cls">심한수 교수님 반</span></td><td class="c">1</td><td>전영서(FEELD)</td><td>—</td></tr>
       </tbody>
     </table>
   </div>
   <div class="callout warn">
     <b class="lbl">검토 사항</b>
-    UIUX실 · 피지컬컴퓨팅스튜디오 · UT실은 2~3팀의 요청이 중복됩니다. 403B · 복도 미디어월 · 크리에이티브 스튜디오 미디어월 구역은 요청 팀이 1팀이나, 일반 전시 공간이 아니므로 전시 사용 가능 여부에 대한 확인이 필요합니다.
+    UIUX실 · 피지컬컴퓨팅스튜디오 · UT실은 2~3팀의 요청이 중복됩니다. 미디어월 공간 2곳과 4층 계단식 강의실(403B)은 심한수 교수님 반(체험 · 실감형 인터랙티브 콘텐츠 구현 / 전시) 3팀이 각 1팀씩 요청한 공간으로, 요청 중복은 없습니다.
   </div>
 </section>
 
@@ -170,18 +178,18 @@
     </div>
 
     <div class="team must">
-      <div class="hd"><span class="nm">조강희(말모이)</span><span class="ld">작성 최승진</span></div>
+      <div class="hd"><span class="nm">조강희(말모이)</span><span class="pill cls">심한수 교수님 반</span><span class="ld">작성 최승진</span></div>
       <dl>
         <dt>형태</dt><dd>웹 · 미디어월 · 영상 · 체험형 인터랙티브 · 설치물</dd>
         <dt>장비</dt><dd>프로젝터 1, 적외선 카메라 1, 조명 1, 노트북 1, 모니터 1, 스피커 3</dd>
         <dt>공간</dt><dd>방 하나 규모 · 완전 암전 · 스피커 · 투사 거리 3m 이상</dd>
-        <dt>희망 공간</dt><dd>403B (강의실 내 고사양 · 대형 빔프로젝터 사용)</dd>
+        <dt>희망 공간</dt><dd>4층 계단식 강의실(403B) · 강의실 내 고사양 · 대형 빔프로젝터 사용</dd>
       </dl>
       <div class="why">벽면 리듬게임 투사와 적외선 카메라 손 제스처 인식을 위해 암전 환경과 투사 거리가 필요함. "체험 → 단어 기록 → 실물 나무 참여"로 이어지는 관람 동선과 나무 조형물 설치 구역을 인터랙션 구역과 분리해야 함.</div>
     </div>
 
     <div class="team must">
-      <div class="hd"><span class="nm">홍성주(공명체)</span></div>
+      <div class="hd"><span class="nm">홍성주(공명체)</span><span class="pill cls">심한수 교수님 반</span></div>
       <dl>
         <dt>형태</dt><dd>웹 · 미디어월 · 키오스크 · 영상 · 체험형 인터랙티브 · 설치물</dd>
         <dt>장비</dt><dd>미디어월(복도) 1, 키넥트 1, 햅틱 플로어 1(제작 예정), 데스크톱 1, 모니터 1, 키오스크 1, 스피커 1</dd>
@@ -192,7 +200,7 @@
     </div>
 
     <div class="team must">
-      <div class="hd"><span class="nm">전영서(FEELD)</span><span class="ld">작성 손서윤</span></div>
+      <div class="hd"><span class="nm">전영서(FEELD)</span><span class="pill cls">심한수 교수님 반</span><span class="ld">작성 손서윤</span></div>
       <dl>
         <dt>형태</dt><dd>웹 · 미디어월 · 영상 · 체험형 인터랙티브 · 설치물</dd>
         <dt>장비</dt><dd>데스크톱 3, 모니터 3, 스피커 3, 파티션 3, 아이소핑크 2 등</dd>
