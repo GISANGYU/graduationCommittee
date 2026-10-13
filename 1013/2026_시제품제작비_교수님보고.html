@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시제품제작비 사용 보고</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --ink: #1b1e26; --sub: #5c6472; --line: #e4e7ee;
+    --accent: #1e3a8a; --accent2: #2563eb; --accent-soft: #eef2ff;
+    --down: #0f766e; --down-soft: #e3f6f1; --warn: #b45309; --warn-soft: #fff7ed; --muted-soft: #f1f2f5;
+    --on-accent: #ffffff; --bar-need: #1e3a8a; --bar-res: #93a6d6; --bar-left: #0f9f8f;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 10px 26px -14px rgba(16,24,40,.22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #0d0f14; --panel: #151922; --ink: #e7eaf1; --sub: #98a1b2; --line: #252b37;
+      --accent: #93b0ff; --accent2: #7d97ff; --accent-soft: #182140;
+      --down: #5eead4; --down-soft: #0f2622; --warn: #fbbf24; --warn-soft: #2a1e10; --muted-soft: #1b2029;
+      --on-accent: #0d0f14; --bar-need: #7d97ff; --bar-res: #3d4a72; --bar-left: #2cc6b4;
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 30px -16px rgba(0,0,0,.7); color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #0d0f14; --panel: #151922; --ink: #e7eaf1; --sub: #98a1b2; --line: #252b37;
+    --accent: #93b0ff; --accent2: #7d97ff; --accent-soft: #182140;
+    --down: #5eead4; --down-soft: #0f2622; --warn: #fbbf24; --warn-soft: #2a1e10; --muted-soft: #1b2029;
+    --on-accent: #0d0f14; --bar-need: #7d97ff; --bar-res: #3d4a72; --bar-left: #2cc6b4;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 30px -16px rgba(0,0,0,.7); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-size: 16px; line-height: 1.7;
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; }
+
+  .rh { background: var(--panel); border-bottom: 3px solid var(--accent); padding-block: 34px 22px; }
+  .rh .ki { color: var(--accent2); font-weight: 800; letter-spacing: .14em; font-size: 12px; margin: 0 0 10px; }
+  .rh h1 { font-size: clamp(23px, 4.2vw, 31px); margin: 0 0 6px; font-weight: 800; line-height: 1.25; }
+  .rh .subt { color: var(--sub); margin: 0; font-size: 15px; }
+
+  section { padding-block: 30px 2px; }
+  h2 { font-size: 19px; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  h2 .n { font-size: 12.5px; color: var(--on-accent); background: var(--accent); min-width: 26px; height: 26px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .lead { color: var(--sub); margin: 2px 0 14px; font-size: 15px; }
+
+  .kpis { display: grid; gap: 12px; }
+  @media (min-width: 520px) { .kpis { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 860px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; box-shadow: var(--shadow); min-width: 0; }
+  .kpi .k { font-size: 12.5px; font-weight: 800; color: var(--sub); }
+  .kpi .v { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.3; margin: 4px 0; }
+  .kpi .d { font-size: 13px; color: var(--sub); }
+  .kpi.total { background: var(--accent); border-color: var(--accent); }
+  .kpi.total .k, .kpi.total .d { color: color-mix(in srgb, var(--on-accent) 78%, transparent); }
+  .kpi.total .v { color: var(--on-accent); }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 1px 8px; border-radius: 999px; background: var(--down-soft); color: var(--down); margin-left: 4px; vertical-align: 1px; }
+  .tag.new { background: var(--warn-soft); color: var(--warn); }
+
+  .flow { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; box-shadow: var(--shadow); margin-top: 12px; }
+  .flow .t { font-size: 13px; font-weight: 800; color: var(--sub); margin-bottom: 8px; }
+  .bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; }
+  .bar span { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+  .bar .need { background: var(--bar-need); } .bar .res { background: var(--bar-res); } .bar .left { background: var(--bar-left); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--sub); margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  .tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 680px; background: var(--panel); }
+  th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { background: color-mix(in srgb, var(--accent-soft) 70%, var(--panel)); font-size: 12.5px; color: var(--sub); font-weight: 800; white-space: nowrap; }
+  tbody th { font-weight: 800; white-space: nowrap; }
+  tbody tr:last-child td, tbody tr:last-child th { border-bottom: none; }
+  .r { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.sum th, tr.sum td { font-weight: 800; background: var(--muted-soft); }
+  .note { color: var(--sub); font-size: 12.5px; }
+  .ok { color: var(--down); font-weight: 800; }
+  .no { color: var(--warn); }
+  .dash { color: var(--sub); }
+
+  .steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 720px) { .steps { grid-template-columns: 1fr 1fr; } }
+  .steps li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; box-shadow: var(--shadow); font-size: 14.5px; }
+  .steps b { display: block; font-size: 13px; color: var(--accent2); margin-bottom: 2px; }
+  .callout { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); border-radius: 12px; padding: 12px 15px; font-size: 14px; margin-top: 12px; }
+  .callout b { color: var(--warn); }
+
+  footer { color: var(--sub); font-size: 12.5px; padding-block: 34px 40px; border-top: 1px solid var(--line); margin-top: 34px; }
+  footer .src-t { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+  footer .src { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 4px; }
+  footer .src li { font-size: 13px; }
+  footer .src a, footer .src span { font-weight: 700; margin-right: 6px; }
+  footer .src span { color: var(--ink); }
+  footer a { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<header class="rh">
+  <div class="wrap">
+    <p class="ki">2026 졸업준비위원회 · 교수님 보고</p>
+    <h1>시제품제작지원비 사용 계획</h1>
+    <p class="subt">17팀 배정 · 가벽 · 백월 공제 · 팀 자율 사용과 지정 업체 · 10.13 (화) 기준</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <h2><span class="n">1</span>시제품제작지원비 규모</h2>
+    <p class="lead">캡스톤 시제품제작지원비는 <b>1인 120,000원 × 113명 = 13,560,000원</b>이며, 졸준위 운영 예산과 별도로 전시 17팀에 인원만큼 배정됩니다. 올해는 공통 가벽 · 백월을 먼저 공제하고, 나머지는 각 팀이 자율로 씁니다.</p>
+    <div class="kpis">
+      <div class="kpi total"><div class="k">시제품제작지원비</div><div class="v">13,560,000</div><div class="d">1인 120,000 × 113명 · 17팀</div></div>
+      <div class="kpi"><div class="k">가벽 · 백월 공제</div><div class="v">5,650,000</div><div class="d">1인 50,000원 (잠정) · 공통 전시 환경</div></div>
+      <div class="kpi"><div class="k">팀 자율</div><div class="v">7,910,000</div><div class="d">1인 70,000원 · 장비 대여 · 인쇄물</div></div>
+      <div class="kpi"><div class="k">지정 업체</div><div class="v">2곳</div><div class="d">인쇄 레드프린팅 · 장비 대여 알앤텍</div></div>
+    </div>
+    <div class="flow">
+      <div class="t">13,560,000원 사용 구조</div>
+      <div class="bar">
+        <span class="res" style="width:41.7%;background:var(--accent2)">가벽 · 백월 공제 5,650,000</span>
+        <span class="left" style="width:58.3%">팀 자율 (장비 대여 · 인쇄물) 7,910,000</span>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent2)"></i>가벽 · 백월 공제 41.7%</span>
+        <span><i style="background:var(--bar-left)"></i>팀 자율 58.3%</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>사용처 제한</h2>
+    <p class="lead">올해 시제품제작지원비는 아래 세 가지에만 씁니다. 굿즈는 낼 수 없습니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>구분</th><th>사용 가능</th><th>사용 불가</th><th>결제</th></tr></thead>
+        <tbody>
+          <tr><th>공간 구조물</th><td>가벽 · 백월 (공통 공제)</td><td rowspan="3" class="no">굿즈 (키링 · 뱃지 · 스티커 · 에코백 · 텀블러 등)</td><td rowspan="3" style="white-space:nowrap">사업단</td></tr>
+          <tr><th>장비 대여</th><td>모니터 · 프로젝터 · PC 등 전시 장비 단기 대여</td></tr>
+          <tr><th>인쇄물</th><td>포스터 · 리플렛 · 작품 소개 시트지 등</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">2025년에는 1인 120,000원을 인쇄(레드프린팅) 110,000원 + 화방 10,000원으로 썼습니다. 올해는 가벽 · 백월이 공통 공제로 들어와 팀이 쓰는 금액이 1인 70,000원입니다. 굿즈는 어느 예산으로도 지원하지 않습니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>가벽 · 백월 공제</h2>
+    <p class="lead">공제액은 1인 50,000원(5,650,000원)으로 잠정 책정했고, 두 견적 모두 공제액 안에 들어옵니다. 방식이 확정되면 1인 공제액을 낮춰 팀 자율 금액을 늘릴 수 있습니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>항목</th><th class="r">A안 (일반 가벽)</th><th class="r">B안 (스탠딩 백월)</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><th>CS 가벽 24개 (팀당 3개 · 8팀)</th><td class="r">4,620,000</td><td class="r">2,376,000</td><td>A 라이트너 / B 8t-16t</td></tr>
+          <tr><th>엘리베이터 앞 스탠다드 백월 7개</th><td class="r">693,000</td><td class="r">693,000</td><td>공통 전시 환경</td></tr>
+          <tr><th>백월 배송비</th><td class="r">150,000</td><td class="r">150,000</td><td></td></tr>
+          <tr class="sum"><th>견적 합계</th><td class="r">5,463,000</td><td class="r">3,219,000</td><td></td></tr>
+          <tr><th>공제 총액 (1인 50,000원)</th><td class="r">5,650,000</td><td class="r">5,650,000</td><td></td></tr>
+          <tr><th>여유</th><td class="r">187,000</td><td class="r">2,431,000</td><td>견적 기준 1인 공제: A 약 48,300원 · B 약 28,500원</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">가벽 방식과 1인 공제액은 교수님 승인과 담당 부서 확인을 거쳐 확정합니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>17팀 배정과 팀 자율 금액</h2>
+    <p class="lead">팀 자율 금액은 각 팀이 장비 대여와 인쇄물 중 필요한 곳에 나눠 씁니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>팀 (팀장)</th><th>부문</th><th class="r">인원</th><th class="r">배정액</th><th class="r">가벽 · 백월 공제</th><th class="r">팀 자율 (장비 대여 · 인쇄물)</th></tr></thead>
+        <tbody>
+          <tr><th>1 · 이한숲</th><td>졸업전시 브랜딩</td><td class="r">8</td><td class="r">960,000</td><td class="r">400,000</td><td class="r">560,000</td></tr>
+          <tr><th>2 · 한수현</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>3 · 정서영</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>4 · 김기현</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>5 · 김유란</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>6 · 손예찬</th><td>신규 서비스</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>7 · 윤채원</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>8 · 백귀리</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>9 · 조윤정</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>10 · 곽효진</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>11 · 이준</th><td>신규 서비스</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>12 · 조강희</th><td>인터랙티브</td><td class="r">8</td><td class="r">960,000</td><td class="r">400,000</td><td class="r">560,000</td></tr>
+          <tr><th>13 · 이채연</th><td>인터랙티브</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>14 · 홍성주</th><td>인터랙티브</td><td class="r">8</td><td class="r">960,000</td><td class="r">400,000</td><td class="r">560,000</td></tr>
+          <tr><th>15 · 전영서</th><td>인터랙티브</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>16 · 정시진</th><td>영상</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>17 · 김우성</th><td>영상</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr class="sum"><th>합계 17팀</th><td></td><td class="r">113</td><td class="r">13,560,000</td><td class="r">5,650,000</td><td class="r">7,910,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">인원별로 6인 팀 9곳 · 7인 팀 5곳 · 8인 팀 3곳입니다. 아이맥 대여는 하드웨어팀이 운영 예산(성과전시지원비)으로 일괄 결제하므로 팀 자율 금액에서 빠지지 않습니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>지정 업체와 결제 방법</h2>
+    <p class="lead">결제 · 정산을 줄이기 위해 업체를 두 곳으로 정합니다. 시제품제작지원비는 사업단 결제라 팀이 직접 결제할 수 없습니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>지정 업체</th><th>용도</th><th>결제</th></tr></thead>
+        <tbody>
+          <tr><th>레드프린팅</th><td>인쇄물 (포스터 · 리플렛 · 시트지 등)</td><td>팀별 장바구니 → 조교님께 계정 전달 → 사업단 결제 (2025에도 사용)</td></tr>
+          <tr><th>알앤텍</th><td>장비 대여 (모니터 · 프로젝터 등)</td><td>팀별 대여 목록을 모아 사업단 결제 · 70만원 이상 전자세금계산서</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="steps">
+      <li><b>업체 확인</b>대여 · 구매 업체의 사업자등록증을 먼저 확인합니다.</li>
+      <li><b>결제 시점</b>쓰기 최소 하루 전에 결제를 마쳐야 합니다.</li>
+      <li><b>70만원 이상</b>전자세금계산서가 반드시 필요합니다. 가벽 · 백월과 장비 대여를 한 업체에 모으면 해당됩니다.</li>
+      <li><b>온라인 구매</b>같은 플랫폼에 팀 금액을 넘지 않게 장바구니를 채운 뒤, 조교님께 아이디 · 비밀번호를 전달하면 사업단에서 결제합니다.</li>
+    </ul>
+    <div class="callout"><b>확인할 것</b> — 2026 시제품제작지원비 사용 기간 · 정산 마감(2025년: 개강 ~ 12/19, 월별 정산), 가벽 방식과 1인 공제액 확정, 팀별 장바구니 마감일과 장비 대여 목록 취합 일정.</div>
+  </section>
+
+  <footer>
+    <div class="src-t">근거 자료</div>
+    <ul class="src">
+      <li><a href="근거자료/지원비%20항목%20결제%20방법.txt">지원비 항목 결제 방법 (10.13)</a> 사업자등록증 · 하루 전 결제 · 70만원 이상 세금계산서 · 온라인 결제</li>
+      <li><a href="근거자료/2026_졸준위_예산_최종안.xlsx">2026 졸준위 예산 최종안.xlsx (10.13 갱신)</a> '시제품제작비' 시트 · 17팀 계산 · 가벽 견적 (수식)</li>
+      <li><a href="근거자료/2025_시제품제작지원비%20가이드라인.pdf">2025 시제품제작지원비 가이드라인.pdf</a> 2025 사용 방식 (1인 인쇄 110,000원 · 화방 10,000원)</li>
+      <li><a href="https://drive.google.com/drive/folders/1RrsZqZu5AiUN4WEFt9FtDaDPokd9RPFy" target="_blank" rel="noopener">2025 졸준위 공유 드라이브</a> 2025 캡스톤 지원비 공문(시제품제작지원비 1인 12만원) · 사용지침(41쪽)</li>
+    </ul>
+    <p>2026 졸업준비위원회</p>
+  </footer>
+</main>
+</body>
+</html>

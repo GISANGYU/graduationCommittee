@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>졸준위 예산 확정 보고</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --ink: #1b1e26; --sub: #5c6472; --line: #e4e7ee;
+    --accent: #1e3a8a; --accent2: #2563eb; --accent-soft: #eef2ff;
+    --down: #0f766e; --down-soft: #e3f6f1; --warn: #b45309; --warn-soft: #fff7ed; --muted-soft: #f1f2f5;
+    --on-accent: #ffffff; --bar-need: #1e3a8a; --bar-res: #93a6d6; --bar-left: #0f9f8f;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 10px 26px -14px rgba(16,24,40,.22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #0d0f14; --panel: #151922; --ink: #e7eaf1; --sub: #98a1b2; --line: #252b37;
+      --accent: #93b0ff; --accent2: #7d97ff; --accent-soft: #182140;
+      --down: #5eead4; --down-soft: #0f2622; --warn: #fbbf24; --warn-soft: #2a1e10; --muted-soft: #1b2029;
+      --on-accent: #0d0f14; --bar-need: #7d97ff; --bar-res: #3d4a72; --bar-left: #2cc6b4;
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 30px -16px rgba(0,0,0,.7); color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #0d0f14; --panel: #151922; --ink: #e7eaf1; --sub: #98a1b2; --line: #252b37;
+    --accent: #93b0ff; --accent2: #7d97ff; --accent-soft: #182140;
+    --down: #5eead4; --down-soft: #0f2622; --warn: #fbbf24; --warn-soft: #2a1e10; --muted-soft: #1b2029;
+    --on-accent: #0d0f14; --bar-need: #7d97ff; --bar-res: #3d4a72; --bar-left: #2cc6b4;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 30px -16px rgba(0,0,0,.7); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-size: 16px; line-height: 1.7;
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; }
+
+  .rh { background: var(--panel); border-bottom: 3px solid var(--accent); padding-block: 34px 22px; }
+  .rh .ki { color: var(--accent2); font-weight: 800; letter-spacing: .14em; font-size: 12px; margin: 0 0 10px; }
+  .rh h1 { font-size: clamp(23px, 4.2vw, 31px); margin: 0 0 6px; font-weight: 800; line-height: 1.25; }
+  .rh .subt { color: var(--sub); margin: 0; font-size: 15px; }
+
+  section { padding-block: 30px 2px; }
+  h2 { font-size: 19px; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  h2 .n { font-size: 12.5px; color: var(--on-accent); background: var(--accent); min-width: 26px; height: 26px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .lead { color: var(--sub); margin: 2px 0 14px; font-size: 15px; }
+
+  .kpis { display: grid; gap: 12px; }
+  @media (min-width: 520px) { .kpis { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 860px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; box-shadow: var(--shadow); min-width: 0; }
+  .kpi .k { font-size: 12.5px; font-weight: 800; color: var(--sub); }
+  .kpi .v { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.3; margin: 4px 0; }
+  .kpi .d { font-size: 13px; color: var(--sub); }
+  .kpi.total { background: var(--accent); border-color: var(--accent); }
+  .kpi.total .k, .kpi.total .d { color: color-mix(in srgb, var(--on-accent) 78%, transparent); }
+  .kpi.total .v { color: var(--on-accent); }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 1px 8px; border-radius: 999px; background: var(--down-soft); color: var(--down); margin-left: 4px; vertical-align: 1px; }
+  .tag.new { background: var(--warn-soft); color: var(--warn); }
+
+  .flow { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; box-shadow: var(--shadow); margin-top: 12px; }
+  .flow .t { font-size: 13px; font-weight: 800; color: var(--sub); margin-bottom: 8px; }
+  .bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; }
+  .bar span { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+  .bar .need { background: var(--bar-need); } .bar .res { background: var(--bar-res); } .bar .left { background: var(--bar-left); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--sub); margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  .tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 680px; background: var(--panel); }
+  th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { background: color-mix(in srgb, var(--accent-soft) 70%, var(--panel)); font-size: 12.5px; color: var(--sub); font-weight: 800; white-space: nowrap; }
+  tbody th { font-weight: 800; white-space: nowrap; }
+  tbody tr:last-child td, tbody tr:last-child th { border-bottom: none; }
+  .r { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.sum th, tr.sum td { font-weight: 800; background: var(--muted-soft); }
+  .note { color: var(--sub); font-size: 12.5px; }
+  .ok { color: var(--down); font-weight: 800; }
+  .no { color: var(--warn); }
+  .dash { color: var(--sub); }
+
+  .steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 720px) { .steps { grid-template-columns: 1fr 1fr; } }
+  .steps li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; box-shadow: var(--shadow); font-size: 14.5px; }
+  .steps b { display: block; font-size: 13px; color: var(--accent2); margin-bottom: 2px; }
+  .callout { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); border-radius: 12px; padding: 12px 15px; font-size: 14px; margin-top: 12px; }
+  .callout b { color: var(--warn); }
+
+  footer { color: var(--sub); font-size: 12.5px; padding-block: 34px 40px; border-top: 1px solid var(--line); margin-top: 34px; }
+  footer .src-t { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+  footer .src { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 4px; }
+  footer .src li { font-size: 13px; }
+  footer .src a, footer .src span { font-weight: 700; margin-right: 6px; }
+  footer .src span { color: var(--ink); }
+  footer a { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<header class="rh">
+  <div class="wrap">
+    <p class="ki">2026 졸업준비위원회 · 교수님 보고</p>
+    <h1>졸업전시 예산 확정 보고</h1>
+    <p class="subt">전체 예산 규모 · 재원별 사용처 제한 · 팀별 사용 가능 항목 · 10.13 (화) 기준</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <h2><span class="n">1</span>전체 예산 규모</h2>
+    <p class="lead">학생회비와 지원비 3종을 합친 졸업전시 전체 예산은 <b>30,185,000원</b>입니다. 전시지원비는 10.12 공문으로 <b>1인 25,000원 × 113명</b>이 확정되었습니다.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="k">학생회비</div><div class="v">11,300,000</div><div class="d">1인 100,000 × 113명</div></div>
+      <div class="kpi"><div class="k">성과전시지원비 <span class="tag">확정</span></div><div class="v">2,500,000</div><div class="d">캡스톤 교과목 단위</div></div>
+      <div class="kpi"><div class="k">전시지원비 <span class="tag new">10.12 공문</span></div><div class="v">2,825,000</div><div class="d">1인 25,000 × 113명</div></div>
+      <div class="kpi"><div class="k">시제품제작지원비 <span class="tag">확정</span></div><div class="v">13,560,000</div><div class="d">1인 120,000 × 113명 · 팀별 배정</div></div>
+    </div>
+    <div class="flow">
+      <div class="t">전체 30,185,000원 구성</div>
+      <div class="bar">
+        <span class="need" style="width:55.1%">졸준위 운영 예산 16,625,000</span>
+        <span class="left" style="width:44.9%">팀별 시제품제작지원비 13,560,000</span>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--bar-need)"></i>운영 예산 55.1% · 학생회비 + 성과전시 + 전시지원비 · 졸준위 집행</span>
+        <span><i style="background:var(--bar-left)"></i>시제품제작지원비 44.9% · 가벽 공제 후 각 팀 집행</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>재원별 사용처 제한</h2>
+    <p class="lead">학생회비만 제한이 없고, 지원비 3종은 쓸 수 있는 곳이 정해져 있습니다. 항목은 쓸 수 있는 재원에 맞춰 배정했습니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>재원</th><th class="r">금액</th><th>사용 가능</th><th>사용 불가</th><th>결제</th></tr></thead>
+        <tbody>
+          <tr><th>학생회비</th><td class="r">11,300,000</td><td>제한 없음 (회의비 · 선물 · 상품 포함)</td><td class="dash">–</td><td style="white-space:nowrap">총무</td></tr>
+          <tr><th>성과전시지원비</th><td class="r">2,500,000</td><td>현수막 · 배너 · 리플렛 · 포스터, 전시공간 대여, 전시 물품, 렌탈</td><td class="no">회의비 · 상품권 · 도서 · 교통비 · 소프트웨어 · IT 기기 구매 · 개인 소장 물품</td><td style="white-space:nowrap">사업단</td></tr>
+          <tr><th>전시지원비</th><td class="r">2,825,000</td><td>소모성 경비 (시트지 · 커튼 · 포장재 · 설치 소모품 · 테이블 렌탈 · 인쇄물)</td><td class="no">회의비(식비)</td><td style="white-space:nowrap">사업단</td></tr>
+          <tr><th>시제품제작지원비</th><td class="r">13,560,000</td><td>공간 구조물(가벽) · 장비 대여 · 인쇄물</td><td class="no">굿즈 (키링 · 뱃지 · 스티커 · 에코백 · 텀블러 등)</td><td style="white-space:nowrap">사업단</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">30,185,000</td><td colspan="3"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>시제품제작지원비 팀별 사용 계획</h2>
+    <p class="lead">팀 배정액(1인 120,000원)에서 <b>가벽 · 백월 공제</b>(1인 50,000원)만 공통으로 빼고, 나머지 <b>1인 70,000원</b>은 각 팀이 <b>장비 대여 · 인쇄물</b>에 자율로 씁니다. 아이맥 대여는 성과전시지원비로 일괄 결제합니다(5장). 업체는 결제 · 정산을 줄이기 위해 <b>인쇄 레드프린팅 · 장비 대여 알앤텍 두 곳</b>으로 정합니다. 굿즈는 시제품제작비로 낼 수 없고, 다른 예산으로도 지원하지 않습니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>팀 (팀장)</th><th>부문</th><th class="r">인원</th><th class="r">배정액</th><th class="r">가벽 · 백월 공제</th><th class="r">팀 자율 (장비 대여 · 인쇄물)</th></tr></thead>
+        <tbody>
+          <tr><th>1 · 이한숲</th><td>졸업전시 브랜딩</td><td class="r">8</td><td class="r">960,000</td><td class="r">400,000</td><td class="r">560,000</td></tr>
+          <tr><th>2 · 한수현</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>3 · 정서영</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>4 · 김기현</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>5 · 김유란</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>6 · 손예찬</th><td>신규 서비스</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>7 · 윤채원</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>8 · 백귀리</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>9 · 조윤정</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>10 · 곽효진</th><td>신규 서비스</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>11 · 이준</th><td>신규 서비스</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>12 · 조강희</th><td>인터랙티브</td><td class="r">8</td><td class="r">960,000</td><td class="r">400,000</td><td class="r">560,000</td></tr>
+          <tr><th>13 · 이채연</th><td>인터랙티브</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>14 · 홍성주</th><td>인터랙티브</td><td class="r">8</td><td class="r">960,000</td><td class="r">400,000</td><td class="r">560,000</td></tr>
+          <tr><th>15 · 전영서</th><td>인터랙티브</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr><th>16 · 정시진</th><td>영상</td><td class="r">6</td><td class="r">720,000</td><td class="r">300,000</td><td class="r">420,000</td></tr>
+          <tr><th>17 · 김우성</th><td>영상</td><td class="r">7</td><td class="r">840,000</td><td class="r">350,000</td><td class="r">490,000</td></tr>
+          <tr class="sum"><th>합계 17팀</th><td></td><td class="r">113</td><td class="r">13,560,000</td><td class="r">5,650,000</td><td class="r">7,910,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">가벽 · 백월 공제는 잠정(1인 50,000원)이며, 견적(일반 가벽안 5,463,000 / 스탠딩 백월안 3,219,000)이 확정되면 공제액을 낮춰 팀 자율 금액을 늘릴 수 있습니다. 팀 자율 금액은 지정 업체 두 곳에서 팀별로 장바구니를 맞춰 사업단이 결제합니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>운영 예산 책정</h2>
+    <p class="lead">운영 예산 16,625,000원 중 졸준위 팀 예산(아이맥 대여 포함), 전시 환경 예산, 예비비를 합친 최종 예산은 <b>15,705,065원</b>이고 <b>919,935원</b>이 남습니다. 회의비는 전 팀 <b>1인 30,000원</b>으로 통일했습니다.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="k">졸준위 팀 예산</div><div class="v">12,445,065</div><div class="d">6개 팀 · 아이맥 대여 2,431,000 포함 (5장)</div></div>
+      <div class="kpi"><div class="k">전시 환경 예산</div><div class="v">2,260,000</div><div class="d">공간 연출 · 부스 환경 · 학생회비</div></div>
+      <div class="kpi"><div class="k">예비비</div><div class="v">1,000,000</div><div class="d">팀 예산(아이맥 제외)의 10% · 학생회비</div></div>
+      <div class="kpi total"><div class="k">최종 예산</div><div class="v">15,705,065</div><div class="d">운영 예산의 94.5% · 남는 금액 919,935</div></div>
+    </div>
+    <div class="flow">
+      <div class="t">운영 예산 16,625,000원 중 쓰는 곳</div>
+      <div class="bar">
+        <span class="need" style="width:74.9%">졸준위 팀 예산 12,445,065</span>
+        <span class="res" style="width:13.6%;background:var(--accent2)"></span>
+        <span class="res" style="width:6.0%"></span>
+        <span class="left" style="width:5.5%"></span>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--bar-need)"></i>졸준위 팀 예산 74.9%</span>
+        <span><i style="background:var(--accent2)"></i>전시 환경 예산 13.6%</span>
+        <span><i style="background:var(--bar-res)"></i>예비비 6.0%</span>
+        <span><i style="background:var(--bar-left)"></i>남는 금액 5.5%</span>
+      </div>
+    </div>
+    <div class="tw" style="margin-top:12px">
+      <table>
+        <thead><tr><th>재원</th><th class="r">확보</th><th class="r">졸준위 팀 배정</th><th class="r">전시 환경</th><th class="r">예비비</th><th class="r">남음</th></tr></thead>
+        <tbody>
+          <tr><th>학생회비</th><td class="r">11,300,000</td><td class="r">7,397,610</td><td class="r">2,260,000</td><td class="r">1,000,000</td><td class="r">642,390</td></tr>
+          <tr><th>성과전시지원비</th><td class="r">2,500,000</td><td class="r">2,431,000</td><td class="r dash">–</td><td class="r dash">–</td><td class="r">69,000</td></tr>
+          <tr><th>전시지원비</th><td class="r">2,825,000</td><td class="r">2,616,455</td><td class="r dash">–</td><td class="r dash">–</td><td class="r">208,545</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">16,625,000</td><td class="r">12,445,065</td><td class="r">2,260,000</td><td class="r">1,000,000</td><td class="r">919,935</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b style="color:var(--ink)">전시 환경 예산 2,260,000원</b> — 굿즈 지원은 모든 항목에서 빼고, 같은 금액을 졸준위가 집행하는 전시 환경 예산(공간 연출 · 부스 환경 · 조명 · 안내 사인 등)으로 책정했습니다. 세부 항목은 전시팀이 정리해 교수님 승인 후 확정합니다. 브랜딩팀 이벤트 소품(굿즈) 150,220원도 예산에서 뺐습니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>졸준위 팀별 예산과 사용 재원</h2>
+    <p class="lead">졸준위 6개 팀 예산을 쓸 수 있는 재원에 나눠 담았습니다. 성과전시지원비는 아이맥 대여에 쓰고, 인쇄물 · 테이블 렌탈은 전시지원비로 옮겼습니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>팀</th><th class="r">팀 예산</th><th class="r">학생회비</th><th class="r">성과전시</th><th class="r">전시지원비</th><th class="r">회의비 (포함)</th><th>지원비로 내는 항목</th></tr></thead>
+        <tbody>
+          <tr><th>오프닝팀</th><td class="r">3,898,240</td><td class="r">3,584,850</td><td class="r dash">–</td><td class="r">313,390</td><td class="r dash">–</td><td>샴페인잔 · 페인트마커, 선물 포장재, 리본커팅식</td></tr>
+          <tr><th>전시팀</th><td class="r">3,371,130</td><td class="r">1,923,000</td><td class="r dash">–</td><td class="r">1,448,130</td><td class="r">18인 540,000</td><td>부스 · 리셉션 테이블 렌탈, 시트지 · 암막커튼 · 트러스 천</td></tr>
+          <tr><th>브랜딩팀</th><td class="r">1,805,895</td><td class="r">1,170,960</td><td class="r dash">–</td><td class="r">634,935</td><td class="r">8인 240,000</td><td>포스터 · 현수막 · 엽서 · 명찰 <span class="note">(사진기 대여 · 리플렛 · 명함은 학생회비)</span></td></tr>
+          <tr><th>하드웨어팀</th><td class="r">2,771,000</td><td class="r">240,000</td><td class="r">2,431,000</td><td class="r">100,000</td><td class="r">8인 240,000</td><td>아이맥 17대 대여(성과 · 알앤텍), 멀티탭 · 연장선 · 케이블</td></tr>
+          <tr><th>영상팀</th><td class="r">420,000</td><td class="r">300,000</td><td class="r dash">–</td><td class="r">120,000</td><td class="r">10인 300,000</td><td>촬영 장비 대여 · 소모품</td></tr>
+          <tr><th>본부</th><td class="r">178,800</td><td class="r">178,800</td><td class="r dash">–</td><td class="r dash">–</td><td class="r">2인 60,000</td><td class="dash">– <span class="note">(도메인 연장)</span></td></tr>
+          <tr class="sum"><th>합계</th><td class="r">12,445,065</td><td class="r">7,397,610</td><td class="r">2,431,000</td><td class="r">2,616,455</td><td class="r">46인 1,380,000</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b style="color:var(--ink)">전시팀 노션 예산 6,362,000원과의 차이</b> — 그중 가벽 24개 · 엘리베이터 앞 백월 7개 · 배송비 5,463,000원은 시제품제작지원비 가벽 공제(3장)로 냅니다. 나머지 899,000원(리셉션 · 부스 테이블 · 회의비)에 작년 시제품 항목(시트지 · 커튼 · 천 · 허니콤보드) 2,292,130원을 회비 · 지원비로 옮겨 더하고, 회의비를 18인 기준으로 맞춘 금액이 3,371,130원입니다.</p>
+    <p class="note">아이맥 17대는 알앤텍 견적 2,431,000원(VAT 포함 · 배송 · 회수 · 설치 포함)입니다. 회의비 · 선물 · 상품 · IT 기기는 지원비로 낼 수 없어 학생회비로 냅니다. 브랜딩 · 영상 · 본부 · 하드웨어 공통 설비는 2025 집행 기준 가안입니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>지원비 결제 방법</h2>
+    <p class="lead">성과전시지원비 · 전시지원비 · 시제품제작지원비는 사업단 결제라 학생회비처럼 바로 쓸 수 없습니다.</p>
+    <ul class="steps">
+      <li><b>업체 확인</b>대여 · 구매 업체의 사업자등록증을 먼저 확인합니다.</li>
+      <li><b>결제 시점</b>쓰기 최소 하루 전에 결제를 마쳐야 합니다.</li>
+      <li><b>70만원 이상</b>전자세금계산서가 반드시 필요합니다.</li>
+      <li><b>온라인 구매</b>같은 플랫폼에 금액을 맞춰 장바구니를 채운 뒤, 조교님께 아이디 · 비밀번호를 전달하면 사업단에서 결제합니다.</li>
+    </ul>
+    <div class="callout"><b>전자세금계산서 대상</b> — 아이맥 대여 2,431,000원(성과전시 · 알앤텍, 견적 조건이 현금 선불이라 사업단 결제 가능 여부 확인), 가벽 · 백월(시제품), 전시팀 시트지 · 커튼 · 천 909,130원(전시지원비), 팀별 장비 대여가 한 업체에서 70만원을 넘는 경우.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>남는 금액 919,935원 사용 가안</h2>
+    <p class="lead">성과전시지원비 · 전시지원비 남음은 회의비 · 상품에 못 쓰므로 가벽 렌탈에 먼저 씁니다. 학생회비 남음은 증액 대비로 두고, 쓰지 않으면 전시 후 똑같이 나눠 돌려줍니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>투입처</th><th class="r">금액</th><th>재원</th></tr></thead>
+        <tbody>
+          <tr><th>① 전시팀 · 가벽 확대 (26개 · 8팀 + 예비 2개 수준)</th><td class="r">350,000</td><td>성과전시 69,000 + 전시지원비 208,545 + 학생회비 72,455</td></tr>
+          <tr><th>② 예산안 증액 대비</th><td class="r">569,935</td><td>학생회비 · 쓰지 않으면 전시 후 반환 (1인 약 5,000원)</td></tr>
+          <tr><th>③ 전시 후 회비 반환</th><td class="r">0</td><td>회비는 전시 환경 예산까지 모두 사용</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">919,935</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><b>확인할 것</b> — 전시지원비를 인쇄물 · 테이블 렌탈 · 가벽 렌탈에 쓸 수 있는지(2025년에는 사용)와 지원비 사용 기간 · 정산 마감을 공문 기준으로 확인합니다. 아이맥 대여를 성과전시지원비로 결제하는 것도 함께 확인합니다.</div>
+  </section>
+
+  <footer>
+    <div class="src-t">근거 자료</div>
+    <ul class="src">
+      <li><span>10.12 전시지원비 공문</span> 1인 25,000원 × 113명 확정</li>
+      <li><a href="근거자료/지원비%20항목%20결제%20방법.txt">지원비 항목 결제 방법 (10.13)</a> 사업자등록증 · 하루 전 결제 · 70만원 이상 세금계산서 · 온라인 결제</li>
+      <li><a href="근거자료/2026_졸준위_최종예산안.html">2026 졸준위 최종예산안 (10.13 갱신)</a> 팀별 항목 · 재원 배정 · 2025 집행 비교 상세</li>
+      <li><a href="근거자료/2026_졸준위_예산_최종안.xlsx">2026 졸준위 예산 최종안.xlsx (10.13 갱신)</a> 항목별 금액 · 재원 배정 · 시제품제작비 17팀 계산 (수식)</li>
+      <li><a href="근거자료/2025_졸준위_예산사용내역_정리.xlsx">2025 졸준위 예산 사용내역 정리.xlsx</a> 2025 실제 집행 (가안 기준)</li>
+      <li><a href="근거자료/2025_시제품제작지원비%20가이드라인.pdf">2025 시제품제작지원비 가이드라인.pdf</a> 2025 사용 방식 (1인 인쇄 110,000원 · 화방 10,000원)</li>
+      <li><a href="https://drive.google.com/drive/folders/1RrsZqZu5AiUN4WEFt9FtDaDPokd9RPFy" target="_blank" rel="noopener">2025 졸준위 공유 드라이브</a> 2025 캡스톤 지원비 공문 · 사용지침(41쪽) · 결제 및 정산 방법</li>
+    </ul>
+    <p>2026 졸업준비위원회</p>
+  </footer>
+</main>
+</body>
+</html>

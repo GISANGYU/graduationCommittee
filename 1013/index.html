@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>졸업전시 예산 요약</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --ink: #1b1e26; --sub: #5c6472; --line: #e4e7ee;
+    --accent: #1e3a8a; --accent2: #2563eb; --accent-soft: #eef2ff;
+    --down: #0f766e; --down-soft: #e3f6f1; --warn: #b45309; --warn-soft: #fff7ed; --muted-soft: #f1f2f5;
+    --on-accent: #ffffff; --bar-need: #1e3a8a; --bar-res: #93a6d6; --bar-left: #0f9f8f;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 10px 26px -14px rgba(16,24,40,.22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #0d0f14; --panel: #151922; --ink: #e7eaf1; --sub: #98a1b2; --line: #252b37;
+      --accent: #93b0ff; --accent2: #7d97ff; --accent-soft: #182140;
+      --down: #5eead4; --down-soft: #0f2622; --warn: #fbbf24; --warn-soft: #2a1e10; --muted-soft: #1b2029;
+      --on-accent: #0d0f14; --bar-need: #7d97ff; --bar-res: #3d4a72; --bar-left: #2cc6b4;
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 30px -16px rgba(0,0,0,.7); color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #0d0f14; --panel: #151922; --ink: #e7eaf1; --sub: #98a1b2; --line: #252b37;
+    --accent: #93b0ff; --accent2: #7d97ff; --accent-soft: #182140;
+    --down: #5eead4; --down-soft: #0f2622; --warn: #fbbf24; --warn-soft: #2a1e10; --muted-soft: #1b2029;
+    --on-accent: #0d0f14; --bar-need: #7d97ff; --bar-res: #3d4a72; --bar-left: #2cc6b4;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 30px -16px rgba(0,0,0,.7); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-size: 16px; line-height: 1.7;
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; }
+
+  .rh { background: var(--panel); border-bottom: 3px solid var(--accent); padding-block: 34px 22px; }
+  .rh .ki { color: var(--accent2); font-weight: 800; letter-spacing: .14em; font-size: 12px; margin: 0 0 10px; }
+  .rh h1 { font-size: clamp(23px, 4.2vw, 31px); margin: 0 0 6px; font-weight: 800; line-height: 1.25; }
+  .rh .subt { color: var(--sub); margin: 0; font-size: 15px; }
+
+  section { padding-block: 30px 2px; }
+  h2 { font-size: 19px; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  h2 .n { font-size: 12.5px; color: var(--on-accent); background: var(--accent); min-width: 26px; height: 26px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .lead { color: var(--sub); margin: 2px 0 14px; font-size: 15px; }
+
+  .kpis { display: grid; gap: 12px; }
+  @media (min-width: 520px) { .kpis { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 860px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; box-shadow: var(--shadow); min-width: 0; }
+  .kpi .k { font-size: 12.5px; font-weight: 800; color: var(--sub); }
+  .kpi .v { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.3; margin: 4px 0; }
+  .kpi .d { font-size: 13px; color: var(--sub); }
+  .kpi.total { background: var(--accent); border-color: var(--accent); }
+  .kpi.total .k, .kpi.total .d { color: color-mix(in srgb, var(--on-accent) 78%, transparent); }
+  .kpi.total .v { color: var(--on-accent); }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 1px 8px; border-radius: 999px; background: var(--down-soft); color: var(--down); margin-left: 4px; vertical-align: 1px; }
+  .tag.new { background: var(--warn-soft); color: var(--warn); }
+
+  .flow { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; box-shadow: var(--shadow); margin-top: 12px; }
+  .flow .t { font-size: 13px; font-weight: 800; color: var(--sub); margin-bottom: 8px; }
+  .bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; }
+  .bar span { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+  .bar .need { background: var(--bar-need); } .bar .res { background: var(--bar-res); } .bar .left { background: var(--bar-left); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--sub); margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  .tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 680px; background: var(--panel); }
+  th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { background: color-mix(in srgb, var(--accent-soft) 70%, var(--panel)); font-size: 12.5px; color: var(--sub); font-weight: 800; white-space: nowrap; }
+  tbody th { font-weight: 800; white-space: nowrap; }
+  tbody tr:last-child td, tbody tr:last-child th { border-bottom: none; }
+  .r { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.sum th, tr.sum td { font-weight: 800; background: var(--muted-soft); }
+  .note { color: var(--sub); font-size: 12.5px; }
+  .ok { color: var(--down); font-weight: 800; }
+  .no { color: var(--warn); }
+  .dash { color: var(--sub); }
+
+  .steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 720px) { .steps { grid-template-columns: 1fr 1fr; } }
+  .steps li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; box-shadow: var(--shadow); font-size: 14.5px; }
+  .steps b { display: block; font-size: 13px; color: var(--accent2); margin-bottom: 2px; }
+  .callout { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); border-radius: 12px; padding: 12px 15px; font-size: 14px; margin-top: 12px; }
+  .callout b { color: var(--warn); }
+
+  h3 { font-size: 15.5px; font-weight: 800; margin: 22px 0 8px; }
+  tr.grp td { background: color-mix(in srgb, var(--accent-soft) 45%, var(--panel)); font-weight: 800; font-size: 12.5px; color: var(--accent); padding-block: 6px; }
+  .callout.ok { background: var(--down-soft); border-color: color-mix(in srgb, var(--down) 30%, transparent); }
+  .callout.ok b { color: var(--down); }
+  footer { color: var(--sub); font-size: 12.5px; padding-block: 34px 40px; border-top: 1px solid var(--line); margin-top: 34px; }
+  footer .src-t { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+  footer .src { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 4px; }
+  footer .src li { font-size: 13px; }
+  footer .src a, footer .src span { font-weight: 700; margin-right: 6px; }
+  footer .src span { color: var(--ink); }
+  footer a { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<header class="rh">
+  <div class="wrap">
+    <h1>2026 졸업전시 예산 요약</h1>
+    <p class="subt">재원별 사용처 · 학과 지원금과 학생회비 항목 · 전시 공간 운영 방향 · 10.13 (화) 기준</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <h2><span class="n">1</span>재원별로 어디에 쓰나</h2>
+    <p class="lead">2026 졸업전시 예산은 네 가지 재원, 총 <b>30,185,000원</b>입니다. 재원마다 쓸 수 있는 곳과 결제 방법이 달라 재원별로 나눠 정리했습니다.</p>
+    <div class="tw">
+      <table class="sum-t">
+        <thead><tr><th>재원</th><th class="r">금액</th><th>주요 사용처</th><th>결제</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="4">학과 지원금</td></tr>
+          <tr><th>성과전시지원비</th><td class="r">2,500,000</td><td>전시용 아이맥 17대 대여</td><td>사업단</td></tr>
+          <tr><th>전시지원비</th><td class="r">2,825,000</td><td>공간 연출 소모품 · 테이블 렌탈 · 홍보 인쇄물</td><td>사업단</td></tr>
+          <tr><th>시제품제작지원비</th><td class="r">13,560,000</td><td>공통 가벽 · 백월 + 17팀 장비 대여 · 인쇄물</td><td>사업단</td></tr>
+          <tr class="grp"><td colspan="4">학생회비</td></tr>
+          <tr><th>학생회비</th><td class="r">11,300,000</td><td>오프닝 행사 · 전시 환경 · 공간 연출 · 회의비 · 예비비</td><td>총무</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">30,185,000</td><td colspan="2">학과 지원금 18,885,000 · 학생회비 11,300,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flow">
+      <div class="t">재원 구성</div>
+      <div class="bar">
+        <span class="need" style="width:8.3%"></span>
+        <span class="res" style="width:9.4%;background:var(--accent2)"></span>
+        <span class="left" style="width:44.9%">시제품제작지원비 13,560,000</span>
+        <span class="res" style="width:37.4%">학생회비 11,300,000</span>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--bar-need)"></i>성과전시지원비 8.3%</span>
+        <span><i style="background:var(--accent2)"></i>전시지원비 9.4%</span>
+        <span><i style="background:var(--bar-left)"></i>시제품제작지원비 44.9%</span>
+        <span><i style="background:var(--bar-res)"></i>학생회비 37.4%</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>학과 지원금 사용 항목</h2>
+    <p class="lead">사업단 결제 재원입니다. 회의비 · 식비 · 상품 · 굿즈에는 쓸 수 없습니다.</p>
+
+    <h3>성과전시지원비 · 2,500,000원</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>항목</th><th class="r">금액</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><th>아이맥 27인치 17대 대여 (11/19~22)</th><td class="r">2,431,000</td><td>알앤텍 · 배송 · 설치 · 회수 포함</td></tr>
+          <tr><th>가벽 추가 렌탈</th><td class="r">69,000</td><td>공통 가벽 확대분</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">2,500,000</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>전시지원비 · 2,825,000원</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>항목</th><th class="r">금액</th><th>사용 팀</th></tr></thead>
+        <tbody>
+          <tr><th>시트지 · 암막커튼 · 트러스 천 (공간 연출)</th><td class="r">909,130</td><td>전시팀</td></tr>
+          <tr><th>부스 테이블 · 테이블보 15개 렌탈</th><td class="r">440,000</td><td>전시팀</td></tr>
+          <tr><th>리셉션 테이블</th><td class="r">99,000</td><td>전시팀</td></tr>
+          <tr><th>포스터 · 현수막 · 엽서 · 스태프 명찰</th><td class="r">634,935</td><td>브랜딩팀</td></tr>
+          <tr><th>오프닝 세레모니 소모품 · 포장재 · 리본</th><td class="r">313,390</td><td>오프닝팀</td></tr>
+          <tr><th>촬영 장비 대여 · 소모품</th><td class="r">120,000</td><td>영상팀</td></tr>
+          <tr><th>멀티탭 · 연장선 · 케이블</th><td class="r">100,000</td><td>하드웨어팀</td></tr>
+          <tr><th>가벽 추가 렌탈</th><td class="r">208,545</td><td>공통 가벽 확대분</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">2,825,000</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>시제품제작지원비 · 13,560,000원 (1인 120,000원 × 113명)</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>항목</th><th class="r">금액</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><th>공통 가벽 · 백월</th><td class="r">5,650,000</td><td>1인 50,000원 공제 (견적 확정 시 조정)</td></tr>
+          <tr><th>17팀 자율 · 장비 대여 · 인쇄물</th><td class="r">7,910,000</td><td>1인 70,000원 · 6인 420,000 / 7인 490,000 / 8인 560,000 · 업체 2곳(레드프린팅 · 알앤텍)</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">13,560,000</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>학생회비 사용 항목 · 11,300,000원</h2>
+    <p class="lead">1인 100,000원 × 113명. 학과 지원금으로 낼 수 없는 항목을 냅니다. 총무가 결제합니다.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>항목</th><th class="r">금액</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><th>오프닝 행사</th><td class="r">3,584,850</td><td>졸업생 · 교수님 선물 3종 1,484,850 · 게임 상품 300,000 · 행사 상품 1,800,000</td></tr>
+          <tr><th>전시 환경</th><td class="r">2,260,000</td><td>부스 공간 분리 · 암전 커튼 · 4층 안내 구조물 등 (굿즈 지원 대신)</td></tr>
+          <tr><th>공간 연출 (허니콤보드)</th><td class="r">1,383,000</td><td>크리에이티브 스튜디오 · 리셉션</td></tr>
+          <tr><th>홍보물 · 장비</th><td class="r">930,960</td><td>리플렛 · 명함 · 즉석 사진기 대여 · 웹 도메인 · 편집 툴 등</td></tr>
+          <tr><th>회의비</th><td class="r">1,380,000</td><td>졸준위 6개 팀 · 1인 30,000원</td></tr>
+          <tr><th>졸업전시 사이트 도메인</th><td class="r">118,800</td><td>연장</td></tr>
+          <tr><th>예비비</th><td class="r">1,000,000</td><td>설치 · 철거일 식사 · 물 · 교통 등</td></tr>
+          <tr><th>가벽 추가 렌탈</th><td class="r">72,455</td><td>공통 가벽 확대분 (지원금 잔액과 합쳐 350,000)</td></tr>
+          <tr><th>증액 대비</th><td class="r">569,935</td><td>쓰지 않으면 전시 후 반환 (1인 약 5,000원)</td></tr>
+          <tr class="sum"><th>합계</th><td class="r">11,300,000</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>전시 공간 운영 방향</h2>
+    <ul class="steps">
+      <li><b>별도 공간 4팀</b>피지컬컴퓨팅스튜디오 1팀, 4층 구역 (영상 2팀 등)</li>
+      <li><b>4층 동선</b>암전 · 커튼 등 4층 전시 환경 확보, 계단 앞 안내 구조물, 계단 포스터</li>
+      <li><b>크리에이티브 스튜디오</b>부스별 공간 분리가 잘 보이도록 배치 (가벽 · 파티션)</li>
+      <li><b>미디어월</b>피지컬컴퓨팅스튜디오 미디어월 사용 가능 여부 확인 중</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>일정</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th>일정</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><th>10.15 (목)</th><td>팀장회의 · 예산 사용 방식, 전시 공간 배정 · 공간 분리 방안 공유</td></tr>
+          <tr><th>10.20 (화)</th><td>팀장 소집 · 회비 1인 100,000원 안내 및 확정</td></tr>
+          <tr><th>확인 중</th><td>전시지원비 세부 사용 기준 · 정산 마감, 아이맥 대여 결제 방식</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div class="src-t">세부 보고 자료 (10.13)</div>
+    <ul class="src">
+      <li><a href="2026_졸준위_운영예산_교수님보고.html">운영 예산 보고</a> 학생회비 · 성과전시지원비 · 전시지원비 책정과 졸준위 팀별 예산</li>
+      <li><a href="2026_시제품제작비_교수님보고.html">시제품제작지원비 사용 계획</a> 17팀 배정 · 가벽 · 백월 공제 · 팀 자율 금액 · 지정 업체</li>
+      <li><a href="2026_졸준위_예산확정_교수님보고.html">예산 확정 보고 (통합본)</a> 운영 예산과 시제품제작지원비를 한 문서로</li>
+    </ul>
+    <div class="src-t">산정 자료</div>
+    <ul class="src">
+      <li><a href="근거자료/2026_졸준위_예산_최종안.xlsx">2026 졸준위 예산 최종안.xlsx</a> 항목별 금액 · 재원 배정 · 시제품제작비 17팀 계산 (수식)</li>
+      <li><a href="근거자료/2026_졸준위_최종예산안.html">2026 졸준위 최종예산안 (상세)</a> 항목별 근거 · 2025 집행 비교 · 가벽 투자 규모</li>
+      <li><a href="근거자료/2025_졸준위_예산사용내역_정리.xlsx">2025 졸준위 예산 사용내역 정리.xlsx</a> 2025 실제 집행 (가안 기준)</li>
+    </ul>
+    <div class="src-t">근거 자료</div>
+    <ul class="src">
+      <li><a href="근거자료/지원비%20항목%20결제%20방법.txt">지원비 항목 결제 방법</a> 사업자등록증 · 하루 전 결제 · 70만원 이상 세금계산서 · 온라인 결제</li>
+      <li><a href="근거자료/2025_시제품제작지원비%20가이드라인.pdf">2025 시제품제작지원비 가이드라인.pdf</a> 2025 사용 방식</li>
+      <li><a href="https://drive.google.com/drive/folders/1RrsZqZu5AiUN4WEFt9FtDaDPokd9RPFy" target="_blank" rel="noopener">2025 졸준위 공유 드라이브</a> 2025 캡스톤 지원비 공문 · 사용지침(41쪽) · 결제 및 정산 방법</li>
+    </ul>
+    <p>2026 졸업준비위원회 · 2026.10.13</p>
+  </footer>
+</main>
+</body>
+</html>
