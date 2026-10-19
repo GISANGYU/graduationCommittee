@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>졸업전시 팀장 회의</title>
+<style>
+  :root {
+    --bg: #0d0e12;
+    --panel: #16181f;
+    --line: #2a2d38;
+    --fg: #e8eaf0;
+    --muted: #8b90a0;
+    --accent: #4f7cff;
+    /* 슬라이드 팔레트 (9/1 학과회의 브리핑과 동일) */
+    --s-bg: #171717;
+    --s-card: #2e2e2e;
+    --s-card-hi: #2e2e16;
+    --s-yellow: #fdfd00;
+    --s-white: #ffffff;
+    --s-dim: #b0b0b0;
+    --s-head: #8a8a8a;
+    --s-rule: #666666;
+    --s-red: #ff7a7a;
+    --s-green: #7ee0a8;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Pretendard', 'Noto Sans KR', -apple-system, 'Malgun Gothic', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ---------- 무대 ---------- */
+  #stage { position: fixed; inset: 0 0 52px 0; display: grid; place-items: center; padding: 24px; }
+  #frame {
+    position: relative;
+    width: min(100%, calc((100vh - 100px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+    background: var(--s-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  }
+  .slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.18s ease; }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* 960x540 좌표계 캔버스 — --s 배율로 프레임에 맞춘다 */
+  .canvas {
+    position: absolute; top: 0; left: 0; width: 960px; height: 540px;
+    transform-origin: 0 0; transform: scale(var(--s, 1));
+    background: var(--s-bg); color: var(--s-white);
+    font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ---------- 슬라이드 공통 요소 ---------- */
+  .hd {
+    position: absolute; top: 34px; left: 52px; right: 52px;
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 300; color: var(--s-head);
+  }
+  .stitle { position: absolute; top: 70px; left: 52px; right: 52px; margin: 0; font-size: 19px; font-weight: 400; letter-spacing: -0.01em; }
+  .stitle .n { margin-right: 12px; color: var(--s-yellow); font-weight: 700; }
+  .stitle .tag { font-size: 10px; color: var(--s-head); margin-left: 10px; font-weight: 400; }
+  .body { position: absolute; left: 52px; right: 52px; top: 118px; }
+  .lead { margin: 0 0 14px; font-size: 11px; line-height: 1.7; color: var(--s-dim); }
+  .yl { color: var(--s-yellow); }
+  .dim { color: var(--s-dim); }
+  .b { font-weight: 700; }
+  .red { color: var(--s-red); font-weight: 700; }
+  .grn { color: var(--s-green); font-weight: 700; }
+
+  .row { display: flex; gap: 12px; }
+  .col { flex: 1; min-width: 0; }
+
+  .card { background: var(--s-card); border-radius: 12px; padding: 14px 16px; }
+  .card.hi { background: var(--s-card-hi); }
+  .card h4 { margin: 0 0 9px; font-size: 11.5px; font-weight: 700; color: var(--s-yellow); }
+  .card ul, .card ol { margin: 0; padding-left: 14px; }
+  .card li { font-size: 10px; line-height: 1.75; }
+  .card p { margin: 0; font-size: 10px; line-height: 1.75; color: var(--s-dim); }
+
+  table.t { width: 100%; border-collapse: collapse; font-size: 10px; }
+  table.t th, table.t td { border-bottom: 1px solid #3a3a3a; padding: 6px 9px; text-align: left; vertical-align: top; line-height: 1.55; }
+  table.t thead th { color: var(--s-yellow); font-weight: 700; border-bottom-color: #5a5a20; }
+  table.t tbody th { font-weight: 700; white-space: nowrap; }
+  table.t td.c, table.t th.c { text-align: center; }
+  table.t tr.hl td, table.t tr.hl th { background: var(--s-card-hi); }
+  table.t.tight th, table.t.tight td { padding: 4.5px 8px; }
+
+  .flow { display: flex; align-items: stretch; gap: 7px; }
+  .flow .step { flex: 1; background: var(--s-card); border-radius: 10px; padding: 11px 10px; text-align: center; }
+  .flow .step.hi { background: var(--s-card-hi); }
+  .flow .step .k { display: block; font-size: 9px; color: var(--s-yellow); font-weight: 700; margin-bottom: 5px; }
+  .flow .step .v { font-size: 10px; line-height: 1.5; }
+  .flow .arw { align-self: center; color: var(--s-rule); font-size: 12px; }
+
+  .opts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 5px; font-size: 10px; color: var(--s-dim); }
+  .opts span::before { content: '□ '; color: var(--s-yellow); }
+
+  .q { border-left: 2px solid var(--s-yellow); padding: 1px 0 1px 11px; margin: 0 0 11px; }
+  .q > b { display: block; font-size: 11px; margin-bottom: 2px; }
+  .q p { margin: 0; font-size: 10px; line-height: 1.65; color: var(--s-dim); }
+
+  .fig { background: #fff; border-radius: 8px; overflow: hidden; }
+  .fig img { display: block; width: 100%; height: auto; }
+  .cap { font-size: 9px; color: var(--s-dim); margin-top: 5px; line-height: 1.5; }
+
+  .note { position: absolute; left: 52px; right: 52px; bottom: 26px; font-size: 9.5px; color: var(--s-dim); line-height: 1.6; }
+
+  /* 표지 */
+  .cover-kicker { position: absolute; left: 52px; bottom: 124px; font-size: 20px; color: #8a8a8a; font-weight: 300; }
+  .cover-title { position: absolute; left: 52px; bottom: 60px; margin: 0; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; }
+  .cover-meta { position: absolute; right: 52px; bottom: 66px; text-align: right; font-size: 11px; line-height: 1.8; color: var(--s-dim); }
+  .end-line { position: absolute; left: 52px; right: 52px; top: 240px; text-align: center; font-size: 18px; font-weight: 700; color: var(--s-yellow); }
+  .end-sub { position: absolute; left: 52px; right: 52px; top: 278px; text-align: center; font-size: 11px; color: var(--s-dim); }
+
+  /* 순서 */
+  .agenda { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .agenda .it { display: grid; grid-template-columns: 56px 1fr; align-items: center; background: var(--s-card); border-radius: 9px; padding: 10px 12px; font-size: 11px; }
+  .agenda .it .k { color: var(--s-yellow); font-weight: 700; font-size: 10px; }
+  .agenda .it .m { text-align: right; color: var(--s-dim); font-size: 9.5px; }
+  .agenda .it .tg { font-size: 8.5px; color: var(--s-head); margin-left: 6px; }
+
+  /* 일정 타임라인 */
+  .tl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .tl .wk { background: var(--s-card); border-radius: 10px; padding: 11px 12px; }
+  .tl .wk h5 { margin: 0 0 7px; font-size: 10.5px; color: var(--s-yellow); }
+  .tl .wk ul { margin: 0; padding-left: 12px; }
+  .tl .wk li { font-size: 9.5px; line-height: 1.65; }
+  .tl .wk li .d { font-weight: 700; }
+  .tl .wk li.due { color: var(--s-yellow); }
+
+  /* ---------- 뷰어 UI ---------- */
+  .zone { position: absolute; top: 0; bottom: 0; width: 22%; z-index: 5; cursor: pointer; background: transparent; border: 0; }
+  .zone.prev { left: 0; }
+  .zone.next { right: 0; }
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 52px;
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    background: var(--panel); border-top: 1px solid var(--line); font-size: 13px;
+  }
+  #bar .title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  #bar .title b { color: var(--fg); font-weight: 500; }
+  .btn { background: #22252f; color: var(--fg); border: 1px solid var(--line); border-radius: 7px; height: 30px; padding: 0 11px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .btn:hover { background: #2c3040; }
+  #counter { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 58px; text-align: center; }
+  #counter b { color: var(--fg); }
+  #progress { position: fixed; left: 0; bottom: 52px; height: 2px; background: var(--accent); transition: width 0.18s ease; z-index: 20; }
+  #overview { position: fixed; inset: 0; z-index: 50; display: none; overflow-y: auto; padding: 28px; background: rgba(10, 11, 15, 0.97); }
+  #overview.open { display: block; }
+  #overview h2 { margin: 0 0 20px; font-size: 15px; font-weight: 500; color: var(--muted); }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .thumb { padding: 0; overflow: hidden; text-align: left; font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+  .thumb:hover { border-color: var(--accent); }
+  .thumb.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .thumb-canvas { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--s-bg); }
+  .thumb-canvas .canvas { transform: scale(var(--ts, 0.27)); }
+  .thumb-meta { display: block; padding: 9px 11px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+  .thumb-meta b { color: var(--fg); margin-right: 6px; }
+
+  body.presenting #bar, body.presenting #progress { display: none; }
+  body.presenting #stage { inset: 0; padding: 0; }
+  body.presenting #frame { width: min(100vw, calc(100vh * 16 / 9)); border-radius: 0; box-shadow: none; }
+
+  .tbd { color: var(--s-yellow); border-bottom: 1px dashed var(--s-yellow); padding: 0 2px; }
+  .flow .step .big { display: block; font-size: 15px; font-weight: 700; margin: 2px 0; }
+  .x::before { content: '✕ '; color: var(--s-red); font-weight: 700; }
+  .o::before { content: '○ '; color: var(--s-green); font-weight: 700; }
+  ul.plain { list-style: none; padding-left: 0 !important; }
+
+  @media print {
+    @page { size: 960px 540px; margin: 0; }
+    body { overflow: visible; background: #fff; }
+    #bar, #progress, #overview, .zone { display: none !important; }
+    #stage { position: static; inset: auto; padding: 0; display: block; }
+    #frame { width: 960px; height: auto; aspect-ratio: auto; box-shadow: none; border-radius: 0; overflow: visible; background: none; }
+    .slide { position: relative; width: 960px; height: 540px; opacity: 1 !important; visibility: visible !important; page-break-after: always; overflow: hidden; }
+    .slide .canvas { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="frame">
+
+    <!-- 1. 표지 -->
+    <section class="slide" data-title="표지">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <p class="cover-kicker">2026 졸업전시 준비</p>
+        <h1 class="cover-title">졸업전시 팀장 회의</h1>
+        <div class="cover-meta">10월 20일(화) 13:00<br />졸업준비위원회 위원장 유기상</div>
+      </div>
+    </section>
+
+    <!-- 2. 순서 -->
+    <section class="slide" data-title="오늘 회의 순서">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle">오늘 회의 순서</h2>
+        <div class="body">
+          <p class="lead">오늘 들은 내용은 <span class="yl">팀장님이 팀원들에게 그대로 전달</span>해 주셔야 합니다. 궁금한 점은 각 순서가 끝날 때 바로 질문해 주세요.</p>
+          <div class="agenda">
+            <div class="it"><span class="k">01</span><span>졸업전시 회비 안내 · 확정</span></div>
+            <div class="it"><span class="k">02</span><span>예산은 어떤 순서로 쓰나</span></div>
+            <div class="it"><span class="k">03</span><span>돈의 출처별 사용처</span></div>
+            <div class="it"><span class="k">04</span><span>시제품제작지원비 사용 방법</span></div>
+            <div class="it"><span class="k">05</span><span>지원금으로 살 수 있는 것 · 없는 것</span></div>
+            <div class="it"><span class="k">06</span><span>결제 방법 · 일정</span></div>
+            <div class="it"><span class="k">07</span><span>별도 전시 공간 사용 협의</span></div>
+            <div class="it"><span class="k">08</span><span>이후 일정 · 오늘 결론</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 회비 -->
+    <section class="slide" data-title="01 · 졸업전시 회비">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">01</span>졸업전시 회비 안내 · 확정</h2>
+        <div class="body">
+          <div class="flow">
+            <div class="step hi"><span class="k">1인 회비</span><span class="big yl">120,000원</span><span class="v">졸업전시 참여 학생 전원</span></div>
+            <span class="arw">×</span>
+            <div class="step"><span class="k">인원</span><span class="big">113명</span><span class="v">17개 작품팀</span></div>
+            <span class="arw">=</span>
+            <div class="step"><span class="k">총 회비</span><span class="big">13,560,000원</span><span class="v">총무가 관리 · 결제</span></div>
+          </div>
+          <div class="row" style="margin-top: 16px">
+            <div class="col card">
+              <h4>납부 방법</h4>
+              <ul>
+                <li>계좌: <span class="tbd">[은행 · 계좌번호 · 예금주]</span></li>
+                <li>기한: <span class="tbd">[납부 기한]</span></li>
+                <li>입금자명: <span class="tbd">[예: 팀번호 + 이름]</span></li>
+              </ul>
+            </div>
+            <div class="col card">
+              <h4>남는 회비는 돌려드립니다</h4>
+              <ul>
+                <li>학과 지원금을 <span class="yl">먼저</span> 쓰고, 회비는 <span class="yl">마지막</span>에 씁니다.</li>
+                <li>전시가 끝난 뒤 남는 회비는 <span class="yl">113명에게 똑같이 나눠 반환</span>합니다.</li>
+                <li>사용 내역은 전시 후 영수증과 함께 공개합니다.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <p class="note">팀장님은 팀원 전원에게 금액 · 계좌 · 기한을 전달하고, 팀원 납부 여부를 확인해 주세요.</p>
+      </div>
+    </section>
+
+    <!-- 4. 사용 순서 -->
+    <section class="slide" data-title="02 · 예산 사용 순서">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">02</span>예산은 이 순서로 씁니다<span class="tag">교수님 안내 (10.19)</span></h2>
+        <div class="body">
+          <p class="lead">학과 지원금은 쓸 수 있는 곳이 정해져 있고, 회비는 비교적 자유롭게 쓸 수 있습니다. 그래서 <span class="yl">지원금으로 결제할 수 있는 것은 지원금으로 먼저</span> 결제하고, 회비는 지원금으로 안 되는 곳에만 씁니다.</p>
+          <div class="flow">
+            <div class="step"><span class="k">1순위</span><span class="v"><b>시제품제작지원비</b><br />가벽 · 장비 대여 · 인쇄물</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">2순위</span><span class="v"><b>성과전시지원비</b><br />전시 물품 · 렌탈 · 홍보물</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">3순위</span><span class="v"><b>전시지원비</b><br />학과 결제 · 소모품 · 렌탈</span></div>
+            <span class="arw">→</span>
+            <div class="step hi"><span class="k">4순위</span><span class="v"><b>졸업전시 회비</b><br />회의비 · 오프닝 · 상품</span></div>
+          </div>
+          <div class="row" style="margin-top: 16px">
+            <div class="col q"><b>회비를 아끼는 방법</b><p>지원금으로 되는 항목을 회비로 결제하지 않습니다. 그만큼 전시 후 돌려받는 금액이 커집니다.</p></div>
+            <div class="col q"><b>계획과 금액이 달라져도 괜찮습니다</b><p>과제신청서의 예산 계획은 계획입니다. 실제 결제는 이 순서를 따릅니다.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 재원별 사용처 -->
+    <section class="slide" data-title="03 · 돈의 출처별 사용처">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">03</span>돈의 출처별 사용처<span class="tag">출처에 따라 쓸 수 있는 곳과 결제 방법이 다릅니다</span></h2>
+        <div class="body">
+          <table class="t tight">
+            <thead><tr><th style="width: 17%">돈의 출처</th><th style="width: 12%">금액</th><th style="width: 36%">주요 사용처</th><th style="width: 22%">사용 불가</th><th>결제</th></tr></thead>
+            <tbody>
+              <tr><th>시제품제작지원비</th><td>13,560,000</td><td>공통 가벽 · 백월 + 17개 작품팀 장비 대여 · 인쇄물</td><td class="dim">굿즈 · 3항목 외 품목</td><td>사업단</td></tr>
+              <tr><th>성과전시지원비</th><td>2,500,000</td><td>아이맥 17대 대여 · 가벽 추가 렌탈</td><td class="dim">회의비 · IT 기기 구매 · 굿즈</td><td>사업단</td></tr>
+              <tr><th>전시지원비</th><td>2,825,000</td><td>시트지 · 커튼 · 테이블 렌탈 · 인쇄물 · 소모품</td><td class="dim">회의비(식비) · 굿즈</td><td>학과</td></tr>
+              <tr><th>졸업전시 회비</th><td>13,560,000</td><td>오프닝 행사 · 선물 · 상품 · 회의비 · 전시 환경 · 예비비</td><td class="dim">17개 작품팀 굿즈 지원</td><td>총무</td></tr>
+              <tr class="hl"><th>합계</th><td class="b">32,445,000</td><td colspan="3">지원금 18,885,000 + 회비 13,560,000</td></tr>
+            </tbody>
+          </table>
+          <div class="row" style="margin-top: 14px">
+            <div class="col card"><h4>시제품제작지원비</h4><p>1인 120,000원 × 113명 · 팀별 사용 방법은 04에서 안내</p></div>
+            <div class="col card"><h4>전시지원비</h4><p>1인 25,000원 × 113명 · 학과가 일괄 결제</p></div>
+            <div class="col card hi"><h4>굿즈</h4><p><span class="red">어떤 예산으로도 지원하지 않습니다</span> (스티커 · 에코백 · 텀블러 등)</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 회비 사용처 · 졸준위 -->
+    <section class="slide" data-title="03 · 회비 사용처">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">03</span>회비는 이런 곳에 씁니다<span class="tag">지원금으로 결제할 수 없는 항목</span></h2>
+        <div class="body">
+          <div class="row">
+            <div class="col card">
+              <h4>오프닝 행사</h4>
+              <ul>
+                <li>졸업생 · 교수님 선물</li>
+                <li>게임 · 행사 상품</li>
+                <li>세레모니 · 포장재</li>
+              </ul>
+            </div>
+            <div class="col card">
+              <h4>전시 운영</h4>
+              <ul>
+                <li>전시 환경 개선 (커튼 · 안내물 · 공간 분리)</li>
+                <li>회의비 (1인 30,000원 기준)</li>
+                <li>예비비 (예상 못 한 비용)</li>
+              </ul>
+            </div>
+            <div class="col card hi">
+              <h4>졸준위원 감사 상품</h4>
+              <ul>
+                <li>졸준위원 <b>30명</b>에게 드리는 상품</li>
+                <li>오프닝 행사 상품 예산 안에서 편성</li>
+                <li>1인 <span class="tbd">[금액]</span> 상당</li>
+              </ul>
+            </div>
+          </div>
+          <div class="q" style="margin-top: 16px">
+            <b>졸준위원 감사 상품을 드리는 이유</b>
+            <p>졸준위원 30명은 8월부터 졸업전시 준비를 위해 정기 회의와 팀별 작업을 해 왔습니다. 회의록과 작업 기록을 기준으로 계산하면 <span class="yl">1인 평균 약 <span class="tbd">[OO]</span>시간</span>입니다. 이 시간에 대한 감사의 의미로 상품을 책정했습니다.</p>
+          </div>
+        </div>
+        <p class="note">활동 시간 근거 자료(회의록 · 작업 기록)는 정리해서 단톡방에 공유하겠습니다. 상품 · 선물은 지원금으로 결제할 수 없어 회비로만 가능합니다.</p>
+      </div>
+    </section>
+
+    <!-- 7. 시제품제작비 -->
+    <section class="slide" data-title="04 · 시제품제작지원비 사용 방법">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">04</span>시제품제작지원비 사용 방법</h2>
+        <div class="body">
+          <div class="flow">
+            <div class="step"><span class="k">전체 금액</span><span class="v">1인 120,000원</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">공통 가벽 · 백월비</span><span class="v">1인 50,000원 (임시)</span></div>
+            <span class="arw">→</span>
+            <div class="step hi"><span class="k">팀이 쓸 금액</span><span class="v">1인 70,000원<br />장비 대여 · 인쇄물</span></div>
+          </div>
+          <div class="row" style="margin-top: 14px">
+            <div class="col">
+              <table class="t tight">
+                <thead><tr><th>팀 인원</th><th>팀 수</th><th>전체 금액</th><th>공통 가벽비</th><th>팀이 쓸 금액</th></tr></thead>
+                <tbody>
+                  <tr><th>6인</th><td>9</td><td>720,000</td><td>300,000</td><td class="yl">420,000</td></tr>
+                  <tr><th>7인</th><td>5</td><td>840,000</td><td>350,000</td><td class="yl">490,000</td></tr>
+                  <tr><th>8인</th><td>3</td><td>960,000</td><td>400,000</td><td class="yl">560,000</td></tr>
+                </tbody>
+              </table>
+              <p class="cap">가벽 견적이 확정되면 공제액과 팀별 금액이 조정됩니다.</p>
+            </div>
+            <div class="col card">
+              <h4>지정 업체 2곳</h4>
+              <ul>
+                <li><b>레드프린팅</b> · 인쇄물 (팀별 장바구니)</li>
+                <li><b>알앤텍</b> · 장비 대여 (팀별 목록 제출)</li>
+                <li>장바구니 · 장비 목록 마감: <span class="tbd">[마감일]</span></li>
+                <li class="red">굿즈 불가 · 3항목 외 품목은 졸준위에 먼저 문의</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. 살 수 있는 것 · 없는 것 -->
+    <section class="slide" data-title="05 · 지원금으로 살 수 있는 것 · 없는 것">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">05</span>지원금으로 살 수 있는 것 · 없는 것<span class="tag">2026-2 캡스톤지원비 사용 · 정산 지침 (산학취업처)</span></h2>
+        <div class="body">
+          <div class="row">
+            <div class="col card">
+              <h4>시제품제작지원비</h4>
+              <ul class="plain">
+                <li class="o">재료 · 목업 · 3D 출력물</li>
+                <li class="o"><b>장비 대여</b> · <b>인쇄물</b></li>
+                <li class="o">영상 소스 · 음원 · 도메인 · 성우</li>
+              </ul>
+              <p style="margin-top: 6px">졸업전시에서는 <span class="yl">가벽 · 장비 대여 · 인쇄물</span>만 사용</p>
+            </div>
+            <div class="col card">
+              <h4>성과전시지원비</h4>
+              <ul class="plain">
+                <li class="o">현수막 · 배너 · 리플렛 · 포스터</li>
+                <li class="o">전시공간 대여</li>
+                <li class="o">전시에 필요한 물품</li>
+              </ul>
+            </div>
+            <div class="col card hi">
+              <h4>모든 지원금 공통 · 불가</h4>
+              <ul class="plain">
+                <li class="x"><b>회의비</b> (식비)</li>
+                <li class="x">상품권 · 도서 · 교통비</li>
+                <li class="x">폰트 · 소프트웨어</li>
+                <li class="x">PC 부품 · IT 기기 · USB · 마우스 등</li>
+                <li class="x">개인이 가질 수 있는 범용 제품 (굿즈)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 14px">
+            <div class="col q"><b>IT 기기는 '구매'는 안 되고 '단기 대여'는 됩니다</b><p>모니터 · 아이맥 · 프로젝터 등은 대여로만 지원금 결제가 가능합니다.</p></div>
+            <div class="col q"><b>애매하면 결제 전에 먼저 물어봐 주세요</b><p>지원금 성격에 맞는지 확실하지 않은 품목은 졸준위가 담당 부서에 확인한 뒤 진행합니다.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. 결제 방법 -->
+    <section class="slide" data-title="06 · 결제 방법 · 증빙">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">06</span>결제 방법 · 증빙<span class="tag">지원금 항목은 사업단 법인카드 또는 전자세금계산서로만 결제</span></h2>
+        <div class="body">
+          <div class="flow">
+            <div class="step"><span class="k">1 · 업체 확인</span><span class="v">사업자등록증 확인</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">2 · 장바구니</span><span class="v">품목과 금액을<br />맞춰 담기</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">3 · 졸준위 · 조교님</span><span class="v">결제 정보 전달</span></div>
+            <span class="arw">→</span>
+            <div class="step hi"><span class="k">4 · 사업단 결제</span><span class="v">사용일 최소 하루 전</span></div>
+          </div>
+          <div class="row" style="margin-top: 14px">
+            <div class="col card hi">
+              <h4>절대 안 되는 것</h4>
+              <ul class="plain">
+                <li class="x"><b>개인 카드로 먼저 결제</b> · 현금 결제 (돌려받을 수 없음)</li>
+                <li class="x">포인트 적립 · 해외 결제</li>
+                <li class="x">세금계산서 품목명에 "캡스톤" · "졸업작품"</li>
+              </ul>
+            </div>
+            <div class="col card">
+              <h4>증빙 (정산 때 필요)</h4>
+              <ul>
+                <li>영수증 · 거래명세서는 <span class="yl">원본</span> · <span class="red">캡처본 · 간이영수증 불가</span></li>
+                <li>구입 품목과 개수가 모두 보이는 사진</li>
+                <li>인쇄물은 <span class="yl">모든 인쇄물</span>, 대여 장비는 대여 품목 사진</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <p class="note">세금계산서 발행 번호는 지원금마다 다릅니다(시제품 = 산학협력단, 성과전시 = 대학). 업체에 번호를 직접 알려주지 말고 졸준위를 통해 진행해 주세요.</p>
+      </div>
+    </section>
+
+    <!-- 10. 결제 일정 -->
+    <section class="slide" data-title="06 · 결제 일정">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">06</span>지원금 결제는 10월 안에<span class="tag">11월이 되면 다른 학과 결제가 몰려 처리가 밀립니다</span></h2>
+        <div class="body">
+          <p class="lead">10월 안에 결제해야 11월에 문제없이 집행됩니다. 그래서 각 팀의 <span class="yl">장바구니 · 장비 목록 · 견적은 최대한 빨리</span> 제출해 주세요.</p>
+          <div class="flow">
+            <div class="step hi"><span class="k">팀 제출 마감</span><span class="v">장바구니 · 장비 목록<br /><span class="tbd">[마감일]</span></span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">졸준위 취합</span><span class="v">품목 · 금액 확인<br />조교님 전달</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">사업단 결제</span><span class="v">10월 안 결제 완료</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">11월 집행</span><span class="v">인쇄 · 대여 · 설치</span></div>
+          </div>
+          <table class="t tight" style="margin-top: 14px">
+            <thead><tr><th style="width: 30%">지침상 기한</th><th>날짜</th><th style="width: 40%">비고</th></tr></thead>
+            <tbody>
+              <tr><th>지원금 사용 기간</th><td>개강 ~ 12.21(월)</td><td class="dim">규정상 기한 · 실제 결제는 10월 중 권장</td></tr>
+              <tr><th>10월분 정산</th><td>11.02(월)</td><td class="dim">영수증 원본 · 증빙사진 필요</td></tr>
+              <tr><th>11월분 정산</th><td>12.01(화)</td><td class="dim">본관(파라다이스홀) 6층 직접 제출</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. 별도 공간 -->
+    <section class="slide" data-title="07 · 별도 전시 공간 사용 협의">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">07</span>별도 전시 공간(방) 사용 협의</h2>
+        <div class="body">
+          <p class="lead">별도 공간 사용을 원하는 팀은 회의가 끝난 뒤 남아서 <span class="yl">공간 사용 방식</span>을 함께 협의합니다. 협의 내용은 <span class="yl">교수님 승인을 거쳐 확정</span>합니다.</p>
+          <div class="flow">
+            <div class="step"><span class="k">1 · 희망 팀 협의</span><span class="v">오늘 회의 후</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">2 · 졸준위 정리</span><span class="v">장비 · 공간 조건 정리</span></div>
+            <span class="arw">→</span>
+            <div class="step hi"><span class="k">3 · 교수님 승인</span><span class="v">최종 확정</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">4 · 배치도 반영</span><span class="v">전시팀</span></div>
+          </div>
+          <div class="row" style="margin-top: 16px">
+            <div class="col card">
+              <h4>협의할 내용</h4>
+              <ul>
+                <li>공간을 함께 쓸지 · 나눠 쓸지</li>
+                <li>암전 · 커튼 · 소음 등 필요한 환경</li>
+                <li>전원 · 장비 위치</li>
+              </ul>
+            </div>
+            <div class="col card">
+              <h4>공간 결정 원칙</h4>
+              <ul>
+                <li>부문별 우선권은 없습니다.</li>
+                <li><span class="yl">전시 내용</span>을 기준으로 교수님이 승인합니다.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. 일정 -->
+    <section class="slide" data-title="08 · 이후 일정">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle"><span class="n">08</span>이후 일정<span class="tag">노란 글씨는 팀이 제출 · 참여해야 하는 일정</span></h2>
+        <div class="body">
+          <div class="tl">
+            <div class="wk"><h5>10월 4주</h5><ul>
+              <li class="due"><span class="d">10/20</span> 회비 안내 · 납부 시작</li>
+              <li class="due">시제품 장바구니 · 장비 목록 제출</li>
+              <li class="due"><span class="d">10/27~28</span> 1차 촬영</li>
+            </ul></div>
+            <div class="wk"><h5>10월 5주</h5><ul>
+              <li>지원금 결제 (10월 안)</li>
+              <li>가벽 · 아이맥 예약 확정</li>
+              <li>인쇄물 발주</li>
+              <li class="due">작품 소개 자료 제출</li>
+            </ul></div>
+            <div class="wk"><h5>11월 1~2주</h5><ul>
+              <li><span class="d">11/2</span> 10월분 정산</li>
+              <li><span class="d">11/3</span> 캡스톤 발표</li>
+              <li>반입 신고 · 상주표</li>
+            </ul></div>
+            <div class="wk"><h5>11월 3~4주</h5><ul>
+              <li class="due"><span class="d">11/17~19</span> 설치 (예정)</li>
+              <li><span class="d">11/20(금)</span> 개막 · 오프닝</li>
+              <li><span class="d">11/20~22</span> 전시</li>
+              <li class="due"><span class="d">11/22~23</span> 철거 (예정)</li>
+            </ul></div>
+          </div>
+        </div>
+        <p class="note">설치 · 철거 날짜는 대관 확인 후 확정 공지합니다. 작품 소개 자료 양식과 제출일은 브랜딩팀이 따로 안내합니다.</p>
+      </div>
+    </section>
+
+    <!-- 13. 결론 -->
+    <section class="slide" data-title="오늘 결론 확인">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <h2 class="stitle">오늘 결론 확인<span class="tag">팀장님이 팀원에게 전달할 내용</span></h2>
+        <div class="body">
+          <table class="t">
+            <thead><tr><th style="width: 24%">항목</th><th>내용</th><th style="width: 18%">기한</th></tr></thead>
+            <tbody>
+              <tr><th>회비</th><td>1인 120,000원 · <span class="tbd">[계좌]</span> · 남으면 전시 후 반환</td><td><span class="tbd">[납부 기한]</span></td></tr>
+              <tr><th>시제품제작지원비</th><td>팀별 1인 70,000원 · 장비 대여 · 인쇄물만 · 지정 업체 2곳</td><td><span class="tbd">[장바구니 마감]</span></td></tr>
+              <tr><th>결제</th><td>개인 카드 선결제 금지 · 졸준위를 통해 사업단 결제 · 원본 증빙</td><td>10월 안 결제</td></tr>
+              <tr><th>굿즈</th><td>어떤 예산으로도 지원하지 않음</td><td></td></tr>
+              <tr><th>별도 공간</th><td>희망 팀 협의 → 교수님 승인 후 확정</td><td></td></tr>
+              <tr><th>질문 · 기타</th><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14. 마무리 -->
+    <section class="slide" data-title="마무리">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 20</span></div>
+        <p class="end-line">회비 · 시제품 장바구니 기한을 꼭 지켜 주세요</p>
+        <p class="end-sub">별도 공간 희망 팀은 잠시 남아 주세요 · 문의: 졸업준비위원회 위원장 유기상</p>
+      </div>
+    </section>
+
+    <button class="zone prev" aria-label="이전 슬라이드"></button>
+    <button class="zone next" aria-label="다음 슬라이드"></button>
+  </div>
+</div>
+
+<div id="progress"></div>
+
+<div id="bar">
+  <button class="btn" id="btnPrev">&#8592;</button>
+  <span id="counter"><b>1</b> / 14</span>
+  <button class="btn" id="btnNext">&#8594;</button>
+  <span class="title"><b id="curTitle"></b></span>
+  <button class="btn" id="btnOverview">개요 (O)</button>
+  <button class="btn" id="btnFull">전체화면 (F)</button>
+</div>
+
+<div id="overview">
+  <h2>슬라이드 개요 · 클릭하면 이동, ESC로 닫기</h2>
+  <div id="grid"></div>
+</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var total = slides.length;
+    var idx = 0;
+
+    var counter = document.getElementById('counter');
+    var curTitle = document.getElementById('curTitle');
+    var progress = document.getElementById('progress');
+    var overview = document.getElementById('overview');
+    var frame = document.getElementById('frame');
+    var grid = document.getElementById('grid');
+
+    // 썸네일은 본문을 복제해 생성한다 (본문을 고치면 그대로 반영됨)
+    slides.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.className = 'thumb';
+      var box = document.createElement('div');
+      box.className = 'thumb-canvas';
+      box.appendChild(s.querySelector('.canvas').cloneNode(true));
+      var meta = document.createElement('span');
+      meta.className = 'thumb-meta';
+      meta.innerHTML = '<b>' + (i + 1) + '</b> ' + (s.dataset.title || '');
+      b.appendChild(box);
+      b.appendChild(meta);
+      b.onclick = function () {
+        go(i);
+        overview.classList.remove('open');
+      };
+      grid.appendChild(b);
+    });
+    var thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+
+    // 960x540 캔버스를 프레임/썸네일 크기에 맞춰 배율 조정
+    function fit() {
+      var w = frame.clientWidth;
+      if (w) document.documentElement.style.setProperty('--s', w / 960);
+      var box = document.querySelector('.thumb-canvas');
+      if (box && box.clientWidth) document.documentElement.style.setProperty('--ts', box.clientWidth / 960);
+    }
+    window.addEventListener('resize', fit);
+    fit();
+
+    function render() {
+      slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+      thumbs.forEach(function (t, i) { t.classList.toggle('current', i === idx); });
+      counter.innerHTML = '<b>' + (idx + 1) + '</b> / ' + total;
+      curTitle.textContent = slides[idx].dataset.title || '';
+      progress.style.width = ((idx + 1) / total) * 100 + '%';
+      try { localStorage.setItem('jjw-1020', String(idx)); } catch (e) {}
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(total - 1, n)); render(); }
+    function next() { go(idx + 1); }
+    function prev() { go(idx - 1); }
+
+    document.getElementById('btnNext').onclick = next;
+    document.getElementById('btnPrev').onclick = prev;
+    document.querySelector('.zone.next').onclick = next;
+    document.querySelector('.zone.prev').onclick = prev;
+    document.getElementById('btnOverview').onclick = function () { overview.classList.toggle('open'); fit(); };
+
+    function toggleFull() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(function () {});
+      else document.exitFullscreen();
+    }
+    document.getElementById('btnFull').onclick = toggleFull;
+    document.addEventListener('fullscreenchange', function () {
+      document.body.classList.toggle('presenting', !!document.fullscreenElement);
+      fit();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      var k = e.key;
+      if (k === 'Escape') { overview.classList.remove('open'); return; }
+      if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); next(); }
+      else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); prev(); }
+      else if (k === 'Home') go(0);
+      else if (k === 'End') go(total - 1);
+      else if (k === 'o' || k === 'O') { overview.classList.toggle('open'); fit(); }
+      else if (k === 'f' || k === 'F') toggleFull();
+    });
+
+    var start = 0;
+    var h = parseInt(location.hash.replace('#', ''), 10);
+    if (h >= 1 && h <= total) start = h - 1;
+    else {
+      try {
+        var sv = parseInt(localStorage.getItem('jjw-1020'), 10);
+        if (sv >= 0 && sv < total) start = sv;
+      } catch (e) {}
+    }
+    go(start);
+  })();
+</script>
+
+</body>
+</html>
