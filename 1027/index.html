@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>졸업전시 학과장 보고</title>
+<style>
+  :root {
+    --bg: #0d0e12;
+    --panel: #16181f;
+    --line: #2a2d38;
+    --fg: #e8eaf0;
+    --muted: #8b90a0;
+    --accent: #4f7cff;
+    /* 슬라이드 팔레트 (9/1 학과회의 브리핑과 동일) */
+    --s-bg: #171717;
+    --s-card: #2e2e2e;
+    --s-card-hi: #2e2e16;
+    --s-yellow: #fdfd00;
+    --s-white: #ffffff;
+    --s-dim: #b0b0b0;
+    --s-head: #8a8a8a;
+    --s-rule: #666666;
+    --s-red: #ff7a7a;
+    --s-green: #7ee0a8;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Pretendard', 'Noto Sans KR', -apple-system, 'Malgun Gothic', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ---------- 무대 ---------- */
+  #stage { position: fixed; inset: 0 0 52px 0; display: grid; place-items: center; padding: 24px; }
+  #frame {
+    position: relative;
+    width: min(100%, calc((100vh - 100px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+    background: var(--s-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  }
+  .slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.18s ease; }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* 960x540 좌표계 캔버스 — --s 배율로 프레임에 맞춘다 */
+  .canvas {
+    position: absolute; top: 0; left: 0; width: 960px; height: 540px;
+    transform-origin: 0 0; transform: scale(var(--s, 1));
+    background: var(--s-bg); color: var(--s-white);
+    font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ---------- 슬라이드 공통 요소 ---------- */
+  .hd {
+    position: absolute; top: 34px; left: 52px; right: 52px;
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 300; color: var(--s-head);
+  }
+  .stitle { position: absolute; top: 70px; left: 52px; right: 52px; margin: 0; font-size: 19px; font-weight: 400; letter-spacing: -0.01em; }
+  .stitle .n { margin-right: 12px; color: var(--s-yellow); font-weight: 700; }
+  .stitle .tag { font-size: 10px; color: var(--s-head); margin-left: 10px; font-weight: 400; }
+  .body { position: absolute; left: 52px; right: 52px; top: 118px; }
+  .lead { margin: 0 0 14px; font-size: 11px; line-height: 1.7; color: var(--s-dim); }
+  .yl { color: var(--s-yellow); }
+  .dim { color: var(--s-dim); }
+  .b { font-weight: 700; }
+  .red { color: var(--s-red); font-weight: 700; }
+  .grn { color: var(--s-green); font-weight: 700; }
+
+  .row { display: flex; gap: 12px; }
+  .col { flex: 1; min-width: 0; }
+
+  .card { background: var(--s-card); border-radius: 12px; padding: 14px 16px; }
+  .card.hi { background: var(--s-card-hi); }
+  .card h4 { margin: 0 0 9px; font-size: 11.5px; font-weight: 700; color: var(--s-yellow); }
+  .card ul, .card ol { margin: 0; padding-left: 14px; }
+  .card li { font-size: 10px; line-height: 1.75; }
+  .card p { margin: 0; font-size: 10px; line-height: 1.75; color: var(--s-dim); }
+
+  table.t { width: 100%; border-collapse: collapse; font-size: 10px; }
+  table.t th, table.t td { border-bottom: 1px solid #3a3a3a; padding: 6px 9px; text-align: left; vertical-align: top; line-height: 1.55; }
+  table.t thead th { color: var(--s-yellow); font-weight: 700; border-bottom-color: #5a5a20; }
+  table.t tbody th { font-weight: 700; white-space: nowrap; }
+  table.t td.c, table.t th.c { text-align: center; }
+  table.t tr.hl td, table.t tr.hl th { background: var(--s-card-hi); }
+  table.t.tight th, table.t.tight td { padding: 4.5px 8px; }
+
+  .flow { display: flex; align-items: stretch; gap: 7px; }
+  .flow .step { flex: 1; background: var(--s-card); border-radius: 10px; padding: 11px 10px; text-align: center; }
+  .flow .step.hi { background: var(--s-card-hi); }
+  .flow .step .k { display: block; font-size: 9px; color: var(--s-yellow); font-weight: 700; margin-bottom: 5px; }
+  .flow .step .v { font-size: 10px; line-height: 1.5; }
+  .flow .arw { align-self: center; color: var(--s-rule); font-size: 12px; }
+
+  .opts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 5px; font-size: 10px; color: var(--s-dim); }
+  .opts span::before { content: '□ '; color: var(--s-yellow); }
+
+  .q { border-left: 2px solid var(--s-yellow); padding: 1px 0 1px 11px; margin: 0 0 11px; }
+  .q > b { display: block; font-size: 11px; margin-bottom: 2px; }
+  .q p { margin: 0; font-size: 10px; line-height: 1.65; color: var(--s-dim); }
+
+  .fig { background: #fff; border-radius: 8px; overflow: hidden; }
+  .fig img { display: block; width: 100%; height: auto; }
+  .cap { font-size: 9px; color: var(--s-dim); margin-top: 5px; line-height: 1.5; }
+
+  .note { position: absolute; left: 52px; right: 52px; bottom: 26px; font-size: 9.5px; color: var(--s-dim); line-height: 1.6; }
+
+  /* 표지 */
+  .cover-kicker { position: absolute; left: 52px; bottom: 124px; font-size: 20px; color: #8a8a8a; font-weight: 300; }
+  .cover-title { position: absolute; left: 52px; bottom: 60px; margin: 0; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; }
+  .cover-meta { position: absolute; right: 52px; bottom: 66px; text-align: right; font-size: 11px; line-height: 1.8; color: var(--s-dim); }
+  .end-line { position: absolute; left: 52px; right: 52px; top: 240px; text-align: center; font-size: 18px; font-weight: 700; color: var(--s-yellow); }
+  .end-sub { position: absolute; left: 52px; right: 52px; top: 278px; text-align: center; font-size: 11px; color: var(--s-dim); }
+
+  /* 순서 */
+  .agenda { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .agenda .it { display: grid; grid-template-columns: 56px 1fr; align-items: center; background: var(--s-card); border-radius: 9px; padding: 10px 12px; font-size: 11px; }
+  .agenda .it .k { color: var(--s-yellow); font-weight: 700; font-size: 10px; }
+  .agenda .it .m { text-align: right; color: var(--s-dim); font-size: 9.5px; }
+  .agenda .it .tg { font-size: 8.5px; color: var(--s-head); margin-left: 6px; }
+
+  /* 일정 타임라인 */
+  .tl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .tl .wk { background: var(--s-card); border-radius: 10px; padding: 11px 12px; }
+  .tl .wk h5 { margin: 0 0 7px; font-size: 10.5px; color: var(--s-yellow); }
+  .tl .wk ul { margin: 0; padding-left: 12px; }
+  .tl .wk li { font-size: 9.5px; line-height: 1.65; }
+  .tl .wk li .d { font-weight: 700; }
+  .tl .wk li.due { color: var(--s-yellow); }
+
+  /* ---------- 뷰어 UI ---------- */
+  .zone { position: absolute; top: 0; bottom: 0; width: 22%; z-index: 5; cursor: pointer; background: transparent; border: 0; }
+  .zone.prev { left: 0; }
+  .zone.next { right: 0; }
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 52px;
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    background: var(--panel); border-top: 1px solid var(--line); font-size: 13px;
+  }
+  #bar .title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  #bar .title b { color: var(--fg); font-weight: 500; }
+  .btn { background: #22252f; color: var(--fg); border: 1px solid var(--line); border-radius: 7px; height: 30px; padding: 0 11px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .btn:hover { background: #2c3040; }
+  #counter { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 58px; text-align: center; }
+  #counter b { color: var(--fg); }
+  #progress { position: fixed; left: 0; bottom: 52px; height: 2px; background: var(--accent); transition: width 0.18s ease; z-index: 20; }
+  #overview { position: fixed; inset: 0; z-index: 50; display: none; overflow-y: auto; padding: 28px; background: rgba(10, 11, 15, 0.97); }
+  #overview.open { display: block; }
+  #overview h2 { margin: 0 0 20px; font-size: 15px; font-weight: 500; color: var(--muted); }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .thumb { padding: 0; overflow: hidden; text-align: left; font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+  .thumb:hover { border-color: var(--accent); }
+  .thumb.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .thumb-canvas { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--s-bg); }
+  .thumb-canvas .canvas { transform: scale(var(--ts, 0.27)); }
+  .thumb-meta { display: block; padding: 9px 11px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+  .thumb-meta b { color: var(--fg); margin-right: 6px; }
+
+  body.presenting #bar, body.presenting #progress { display: none; }
+  body.presenting #stage { inset: 0; padding: 0; }
+  body.presenting #frame { width: min(100vw, calc(100vh * 16 / 9)); border-radius: 0; box-shadow: none; }
+
+  .tbd { color: var(--s-yellow); border-bottom: 1px dashed var(--s-yellow); padding: 0 2px; }
+  .flow .step .big { display: block; font-size: 15px; font-weight: 700; margin: 2px 0; }
+  .x::before { content: '✕ '; color: var(--s-red); font-weight: 700; }
+  .o::before { content: '○ '; color: var(--s-green); font-weight: 700; }
+  ul.plain { list-style: none; padding-left: 0 !important; }
+
+  /* 1022 덱 · 슬라이드 하단 여백을 줄이도록 간격 · 글자 크기 확대 */
+  .agenda { gap: 10px 16px; }
+  .agenda .it { grid-template-columns: 44px 1fr auto; padding: 15px 18px; font-size: 12.5px; }
+  .agenda .it .k { font-size: 11px; }
+  .agenda .it .m { font-size: 10.5px; color: var(--s-yellow); white-space: nowrap; padding-left: 12px; }
+  .agenda .it .tg { font-size: 9.5px; }
+  .lead { font-size: 12px; margin-bottom: 18px; }
+  .flow { gap: 9px; }
+  .flow .step { padding: 17px 12px; }
+  .flow .step .k { font-size: 10px; margin-bottom: 7px; }
+  .flow .step .v { font-size: 11.5px; line-height: 1.65; }
+  .card { padding: 18px 20px; }
+  .card h4 { font-size: 13px; margin-bottom: 11px; }
+  .card li { font-size: 11px; line-height: 1.95; }
+  .q { padding-left: 13px; }
+  .q > b { font-size: 12px; margin-bottom: 4px; }
+  .q p { font-size: 11px; line-height: 1.75; }
+  table.t { font-size: 11px; }
+  table.t th, table.t td { padding: 9px 10px; }
+  table.t.tight th, table.t.tight td { padding: 8px 10px; }
+  .tl { gap: 12px; }
+  .tl .wk { padding: 16px 16px; }
+  .tl .wk h5 { font-size: 13px; margin-bottom: 11px; }
+  .tl .wk li { font-size: 11px; line-height: 1.9; margin-bottom: 4px; }
+  .note { font-size: 10.5px; }
+  .gap-l { margin-top: 22px !important; }
+
+
+  /* 1027 덱 · 보고용 표 · 그림 */
+  .fig img { max-height: 100%; }
+  table.t td.r, table.t th.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.t.eq { font-size: 9.6px; }
+  table.t.eq th, table.t.eq td { padding: 4.6px 6px; }
+  table.t.eq thead th { line-height: 1.25; vertical-align: bottom; }
+  table.t.eq thead th span { font-size: 8px; color: var(--s-head); font-weight: 400; }
+  table.t tr.sum th, table.t tr.sum td { font-weight: 700; color: var(--s-yellow); border-top: 1px solid #5a5a20; }
+  table.t.sc { font-size: 11px; }
+  table.t.sc th, table.t.sc td { padding: 6.6px 12px; }
+  table.t.sc .cur { background: var(--s-card-hi); }
+  table.t.sc thead th.cur { color: var(--s-yellow); }
+  table.t.sc tr.tot th, table.t.sc tr.tot td { font-weight: 700; font-size: 12.5px; }
+  table.t.sc tr.tot td .dim { font-size: 9.5px; font-weight: 400; }
+  .bar { display: inline-block; width: 70px; height: 6px; margin-right: 8px; vertical-align: middle; background: #3a3a3a; border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--s-yellow); }
+  .card ol { padding-left: 16px; }
+
+  @media print {
+    @page { size: 960px 540px; margin: 0; }
+    body { overflow: visible; background: #fff; }
+    #bar, #progress, #overview, .zone { display: none !important; }
+    #stage { position: static; inset: auto; padding: 0; display: block; }
+    #frame { width: 960px; height: auto; aspect-ratio: auto; box-shadow: none; border-radius: 0; overflow: visible; background: none; }
+    .slide { position: relative; width: 960px; height: 540px; opacity: 1 !important; visibility: visible !important; page-break-after: always; overflow: hidden; }
+    .slide .canvas { transform: none; }
+  }
+</style>
+<body>
+
+<div id="stage">
+  <div id="frame">
+
+    <!-- 1. 표지 -->
+    <section class="slide" data-title="표지">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <p class="cover-kicker">2026 졸업전시 준비 · 팀별 진행 보고</p>
+        <h1 class="cover-title">학과장님 최종 보고</h1>
+        <div class="cover-meta">10월 27일(화)<br />졸업준비위원회 위원장 유기상</div>
+      </div>
+    </section>
+
+    <!-- 2. 순서 -->
+    <section class="slide" data-title="보고 순서">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle">보고 순서</h2>
+        <div class="body">
+          <p class="lead">각 팀이 정리한 자료(전시 기획서 · 오프닝 회의록 · 팀별 장비 리스트 · 노션 예산안)를 모아 <span class="yl">올해 전시 · 오프닝 구성</span>과 <span class="yl">예산 사용 계획</span>을 보고드립니다.</p>
+          <div class="agenda">
+            <div class="it"><span class="k">01</span><span>한눈에 보기</span><span class="m">일정 · 인원 · 재원</span></div>
+            <div class="it"><span class="k">02</span><span>전시팀 · 올해 전시 구성</span><span class="m">방향 · 공간 · 부스</span></div>
+            <div class="it"><span class="k">03</span><span>오프닝팀 · 오프닝 행사 구성</span><span class="m">컨셉 · 장소 · 순서</span></div>
+            <div class="it"><span class="k">04</span><span>하드웨어팀 · 팀별 장비 리스트</span><span class="m">17팀 집계</span></div>
+            <div class="it"><span class="k">05</span><span>예산 · 사용 순서와 소요액</span><span class="m">예비비 10%</span></div>
+            <div class="it"><span class="k">06</span><span>승인 요청 · 이후 일정</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 한눈에 보기 -->
+    <section class="slide" data-title="01 · 한눈에 보기">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">01</span>한눈에 보기</h2>
+        <div class="body">
+          <div class="flow">
+            <div class="step hi"><span class="k">전시 기간</span><span class="big">11.20 – 11.22</span><span class="v">금 · 토 · 일<br />오프닝 11.20(금)</span></div>
+            <div class="step"><span class="k">참여 인원</span><span class="big">113명</span><span class="v">17개 작품팀<br />6인 9팀 · 7인 5팀 · 8인 3팀</span></div>
+            <div class="step"><span class="k">졸업준비위원회</span><span class="big">30명</span><span class="v">본부 · 브랜딩 · 전시<br />영상 · 오프닝 · 하드웨어</span></div>
+            <div class="step hi"><span class="k">총 재원</span><span class="big">32,445,000원</span><span class="v">지원금 18,885,000<br />+ 회비 13,560,000</span></div>
+          </div>
+          <div class="row gap-l">
+            <div class="col card">
+              <h4>올해 달라진 점</h4>
+              <ul>
+                <li>부스마다 <b>백월로 독립 공간</b> · 크리에이티브 스튜디오 부스도 백월 대여</li>
+                <li>전시 공간을 <b>4층(403B · 402C)</b>까지 확장해 층간 동선 연결</li>
+                <li>오프닝을 전시장 밖 <b>파라다이스홀 다목적홀</b>에서 여는 안 검토</li>
+              </ul>
+            </div>
+            <div class="col card">
+              <h4>예산 원칙</h4>
+              <ul>
+                <li>사용처가 정해진 <b>지원금부터 먼저</b> 쓰고 회비는 마지막에 사용</li>
+                <li>시제품 → 성과전시 → 전시지원비 → 회비 순서</li>
+                <li>지원금은 <span class="yl">10월 안 결제</span> · 남는 회비는 전시 후 반환</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 전시 방향 -->
+    <section class="slide" data-title="02 · 전시팀 · 올해 전시 방향">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">02</span>올해 전시 방향<span class="tag">전시팀 기획서 (10.27 · 팀장 정유민 · 남지연 교수님)</span></h2>
+        <div class="body">
+          <div class="row">
+            <div style="width: 250px; flex: none;" class="fig"><img src="assets/ex_poster.jpg" alt="LET'S SYNC! 포스터" style="height: 300px; object-fit: cover;" /></div>
+            <div class="col">
+              <p class="lead" style="margin-bottom: 14px;"><span class="yl b">#생동감 #독립성 #연결성</span><br />브랜딩 컨셉에 맞춰 밝고 통통 튀는 분위기의 전시를 지향합니다.</p>
+              <div class="q"><b>생동감 · 브랜딩과 같은 톤</b><p>LET'S SYNC! 그래픽을 입구 · 포토존 · 부스 백월까지 이어 전시장 전체 분위기를 맞춥니다.</p></div>
+              <div class="q"><b>독립성 · 팀마다 하나의 부스</b><p>허니콤보드 백월로 부스 영역을 나눠 팀마다 작품과 개성에 집중할 수 있게 합니다.</p></div>
+              <div class="q"><b>연결성 · 5층과 4층을 하나의 흐름으로</b><p>4층까지 확장된 전시 공간을 고려해 층과 부스 사이 관람 흐름이 자연스럽게 이어지도록 합니다.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 공간 구성 -->
+    <section class="slide" data-title="02 · 전시팀 · 공간 구성 5층 · 4층">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">02</span>전체 공간 구성 · 5층 · 4층</h2>
+        <div class="body">
+          <div class="row" style="justify-content: center; gap: 16px;">
+            <div style="width: 470px;">
+              <div class="fig"><img src="assets/ex_plan5f.jpg" alt="5층 공간 구성" /></div>
+              <p class="cap">5층 · 디자인관 · 계단으로 4층 전시 연결</p>
+            </div>
+            <div style="width: 212px;">
+              <div class="fig"><img src="assets/ex_plan4f.jpg" alt="4층 공간 구성" /></div>
+              <p class="cap">4층 · 403B · 402C로 확장</p>
+            </div>
+          </div>
+          <table class="t tight" style="margin-top: 8px;">
+            <thead><tr><th style="width: 24%">공간</th><th>배치</th><th style="width: 24%">공간</th><th>배치</th></tr></thead>
+            <tbody>
+              <tr><th>5층 크리에이티브 스튜디오</th><td>디미디 분야 10팀 (백월 부스)</td><th>5층 UT실 · UIUX실</th><td>브랜딩팀 · REMNANT</td></tr>
+              <tr><th>5층 크스 · 복도 미디어월</th><td>잇다 · 사이</td><th>5층 피지컬컴퓨팅 스튜디오</th><td>레츠꺼어워</td></tr>
+              <tr><th>4층 403B · 402C</th><td>MOMO · 옥타브</td><th>정보관 8층 스튜디오</th><td>뉴미디어 (학과 외 공간)</td></tr>
+              <tr><td colspan="4" class="dim" style="border-bottom: 0;">별도 공간 사용은 교수님 승인을 거쳐 확정합니다.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 부스 -->
+    <section class="slide" data-title="02 · 전시팀 · 팀별 부스 구성">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">02</span>팀별 전시 방식 · 백월 부스</h2>
+        <div class="body">
+          <div class="row">
+            <div class="col" style="flex: 1.15;">
+              <div class="fig"><img src="assets/ex_mockup.jpg" alt="부스 실사 목업" /></div>
+              <p class="cap">부스 실사 목업 · 백월 + 책상 기본 구성</p>
+            </div>
+            <div class="col">
+              <div class="fig" style="padding: 6px 4px 0;"><img src="assets/ex_booth.jpg" alt="부스 구성 계획안 도면" /></div>
+              <p class="cap">스탠다드 백월 16t · 1000 × 2400 × 316mm · ㄱ자 3장 구성</p>
+              <div class="card" style="margin-top: 10px; padding: 13px 16px;">
+                <h4 style="margin-bottom: 6px;">예산에 반영된 수량</h4>
+                <ul>
+                  <li>CS 부스 백월 <b>30개</b> (10팀 × 3) · 엘리베이터 앞 <b>7개</b> · 포토월 <b>7개</b></li>
+                  <li>부스 테이블 · 상판 <b>15팀</b> · 리셉션 테이블 1개</li>
+                  <li>백월 · 테이블 <b>6,663,000원</b> → 시제품제작지원비</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 공간 연출 -->
+    <section class="slide" data-title="02 · 전시팀 · 공간 연출 위치">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">02</span>공간 연출 · 관람 동선 안내</h2>
+        <div class="body">
+          <div class="fig"><img src="assets/ex_zones.jpg" alt="공간 연출 전체 적용 위치" /></div>
+          <div class="row" style="margin-top: 12px;">
+            <div class="col q"><b>입구 · 첫인상</b><p>① 엘리베이터 입구 브랜딩 · ② 전시장 시작 지점 포토존</p></div>
+            <div class="col q"><b>리셉션 · 복도 · 관람 정보</b><p>③ 리셉션 · 팸플릿 매대 · ⑤ 복도 배치도 · 웹사이트 QR</p></div>
+            <div class="col q"><b>바닥 · 분야 입구 · 이동 안내</b><p>④ 바닥 동선 안내 · ⑥ 분야별 입구 연출 · ⑦ 디미디 분야 전시 공간</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. 오프닝 컨셉 -->
+    <section class="slide" data-title="03 · 오프닝팀 · 행사 컨셉">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">03</span>오프닝 행사 컨셉 · SYNC<span class="tag">오프닝팀 5주차 회의록 (팀장 김준아 · 이아람 교수님)</span></h2>
+        <div class="body">
+          <p class="lead" style="margin-bottom: 12px;"><span class="yl b">서로 다른 감각이 하나의 장면으로 연결되는 순간.</span> 졸업전시의 시작을 기념하는 파티 콘셉트로, 각자 완성한 졸업작품과 경험이 하나로 연결되는 장을 만듭니다.</p>
+          <div class="fig" style="background: none;"><img src="assets/op_concept.jpg" alt="행사 컨셉 이미지" style="border-radius: 8px;" /></div>
+          <div class="row" style="margin-top: 14px;">
+            <div class="col q"><b>입장 · 와인잔 꾸미기</b><p>입구에서 투명 와인잔과 페인트 마커를 나눠 주고, 고깔모자 · 선글라스 등 파티 소품을 자유롭게 고릅니다.</p></div>
+            <div class="col q"><b>세레모니 · Let's SYNC!</b><p>각자 메시지 · 이름 · 작품 그래픽을 그린 잔을 전원이 "Let's SYNC!"를 외치며 함께 들어 올립니다.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. 오프닝 장소 -->
+    <section class="slide" data-title="03 · 오프닝팀 · 행사 장소 제안">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">03</span>오프닝 장소 제안 · 파라다이스홀 지하 1층 다목적홀<span class="tag">6주차 회의 · 승인 요청</span></h2>
+        <div class="body">
+          <div class="row">
+            <div class="col" style="flex: 1.05;">
+              <div class="fig"><img src="assets/op_venue.jpg" alt="다목적홀 현장 사진" /></div>
+              <p class="cap">2026.11.20(금) · 총 144석 (좌 27 · 중앙 90 · 우 27) · 필요 125석 (졸업예정자 113 + 교수님 12) · MC 2인</p>
+            </div>
+            <div class="col">
+              <table class="t tight">
+                <thead><tr><th style="width: 22%"></th><th>작년 · CS 스튜디오</th><th>올해 제안 · 다목적홀</th></tr></thead>
+                <tbody>
+                  <tr><th>좌석</th><td>의자 연결 · 통행 불편</td><td>개인 좌석 · 팀별로 모아 앉기 가능</td></tr>
+                  <tr><th>무대</th><td>무대 · 좌석 구분 모호 · 스크린 잘 안 보임</td><td>무대 · 좌석 명확 · 공식 행사 위상</td></tr>
+                  <tr><th>전시장</th><td>CS 부스 팀이 정리 후 재설치</td><td>작품 해체 · 재조립 필요 없음</td></tr>
+                  <tr><th>우려</th><td>—</td><td>찾아오기 어려움 · 행사 중 빈 전시장 · 1학년 좌석</td></tr>
+                </tbody>
+              </table>
+              <div class="card" style="margin-top: 10px; padding: 12px 16px;">
+                <h4 style="margin-bottom: 5px;">우려에 대한 해결 방안</h4>
+                <ul>
+                  <li>표지판 · 안내문 부착, 안내 스텝 배치</li>
+                  <li>행사 1.5~2시간 동안 1학년 스텝이 전시장 지킴</li>
+                  <li>1학년 참관은 개인 선택 (당일 수업이 있는 학생 고려)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">대관 비용 · 가능 여부는 확인 중이며 예산에는 아직 반영하지 않았습니다. 학과장님 승인 후 대관을 진행하겠습니다.</p>
+      </div>
+    </section>
+
+    <!-- 10. 오프닝 순서 · 선물 -->
+    <section class="slide" data-title="03 · 오프닝팀 · 순서 · 선물 · 2부">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">03</span>행사 순서 · 기념 선물 · 2부 콘텐츠</h2>
+        <div class="body">
+          <div class="row">
+            <div class="col card">
+              <h4>1부 · 졸업 전시 오프닝</h4>
+              <ol>
+                <li>입장 · 입구에서 졸업생 선물 배부</li>
+                <li>사회자 인사 · 안내 사항</li>
+                <li>학과장님 축사 · 교수님 축사</li>
+                <li>리본 커팅식</li>
+                <li>졸준위 팀장 인사 · 감사 선물 배부</li>
+                <li>와인잔 세레모니</li>
+                <li>2부 준비</li>
+              </ol>
+            </div>
+            <div class="col card">
+              <h4>2부 · 팀 게임</h4>
+              <ul>
+                <li><b>카훗</b> · 디미디 퀴즈 팀전</li>
+                <li><b>보너스 게임</b> · 화면 문장을 가장 빨리 정확하게 보낸 1인</li>
+                <li><b>초대장 추첨</b> · 브랜딩팀과 협업해 만든 초대장을 추첨권으로 사용</li>
+                <li>게임 상품 배부 · 마무리 인사</li>
+              </ul>
+            </div>
+            <div class="col card" style="flex: 0.9;">
+              <h4>졸업생 · 교수님 기념 선물</h4>
+              <div style="display: flex; gap: 10px; align-items: flex-start;">
+                <div class="fig" style="width: 74px; flex: none;"><img src="assets/op_gift.jpg" alt="기념 선물 후보" /></div>
+                <ul class="plain">
+                  <li>브랜딩 마우스 패드</li>
+                  <li>종이 방향제</li>
+                  <li>석고 방향제</li>
+                  <li class="dim" style="margin-top: 6px;">3안 중 예산 확정 후 선정</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">구간별 시간은 장소 확정 후 정합니다. 선물 · 상품은 지원금으로 결제할 수 없어 회비로 집행합니다 (오프닝 행사 2,098,240원 · 졸준위 감사 상품 1,500,000원).</p>
+      </div>
+    </section>
+
+    <!-- 11. 장비 리스트 -->
+    <section class="slide" data-title="04 · 하드웨어팀 · 팀별 장비 리스트">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">04</span>팀별 장비 리스트 집계<span class="tag">하드웨어팀 구글시트 · 17팀 · 10.27 기준 · 단위 원</span></h2>
+        <div class="body" style="top: 106px;">
+          <div class="row" style="gap: 16px;">
+            <table class="t eq col">
+              <thead><tr><th>팀</th><th class="r">아이맥·PC<br /><span>성과전시</span></th><th class="r">장비 대여·인쇄<br /><span>시제품</span></th><th class="r">팀 부담</th><th class="r">7만 배정액</th></tr></thead>
+              <tbody>
+                <tr><th>1팀 · 8인</th><td class="r">300,000</td><td class="r">310,000</td><td class="r dim">—</td><td class="r">560,000</td></tr>
+                <tr class="hl"><th>2팀 · 6인</th><td class="r">100,000</td><td class="r">597,900 <span class="red">↑</span></td><td class="r dim">—</td><td class="r">420,000</td></tr>
+                <tr><th>3팀 · 6인</th><td class="r">100,000</td><td class="r">226,800</td><td class="r dim">—</td><td class="r">420,000</td></tr>
+                <tr><th>4팀 · 6인</th><td class="r">100,000</td><td class="r">326,700</td><td class="r dim">—</td><td class="r">420,000</td></tr>
+                <tr><th>5팀 · 6인</th><td class="r">300,000</td><td class="r dim">—</td><td class="r">1,085,000</td><td class="r">420,000</td></tr>
+                <tr><th>6팀 · 7인</th><td class="r">200,000</td><td class="r">206,000</td><td class="r dim">—</td><td class="r">490,000</td></tr>
+                <tr><th>7팀 · 6인</th><td class="r">100,000</td><td class="r">101,000</td><td class="r dim">—</td><td class="r">420,000</td></tr>
+                <tr><th>8팀 · 6인</th><td class="r">100,000</td><td class="r dim">—</td><td class="r dim">—</td><td class="r">420,000</td></tr>
+                <tr><th>9팀 · 6인</th><td class="r">100,000</td><td class="r">216,000</td><td class="r dim">—</td><td class="r">420,000</td></tr>
+              </tbody>
+            </table>
+            <table class="t eq col">
+              <thead><tr><th>팀</th><th class="r">아이맥·PC<br /><span>성과전시</span></th><th class="r">장비 대여·인쇄<br /><span>시제품</span></th><th class="r">팀 부담</th><th class="r">7만 배정액</th></tr></thead>
+              <tbody>
+                <tr><th>10팀 · 6인</th><td class="r">100,000</td><td class="r dim">—</td><td class="r dim">—</td><td class="r">420,000</td></tr>
+                <tr><th>11팀 · 7인</th><td class="r">100,000</td><td class="r">73,160</td><td class="r dim">—</td><td class="r">490,000</td></tr>
+                <tr><th>12팀 · 8인</th><td class="r">100,000</td><td class="r dim">—</td><td class="r">111,210</td><td class="r">560,000</td></tr>
+                <tr><th>13팀 · 7인</th><td class="r">100,000</td><td class="r dim">—</td><td class="r">973,350</td><td class="r">490,000</td></tr>
+                <tr><th>14팀 · 8인</th><td class="r">200,000</td><td class="r">100,000</td><td class="r">310,000</td><td class="r">560,000</td></tr>
+                <tr><th>15팀 · 7인</th><td class="r">100,000</td><td class="r">430,000</td><td class="r">120,000</td><td class="r">490,000</td></tr>
+                <tr class="hl"><th>16팀 · 6인</th><td class="r">100,000</td><td class="r">699,900 <span class="red">↑</span></td><td class="r dim">—</td><td class="r">420,000</td></tr>
+                <tr class="hl"><th>17팀 · 7인</th><td class="r">100,000</td><td class="r">566,000 <span class="red">↑</span></td><td class="r dim">—</td><td class="r">490,000</td></tr>
+                <tr class="sum"><th>합계</th><td class="r">2,300,000</td><td class="r">3,853,460</td><td class="r">2,599,560</td><td class="r">7,910,000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="note">아이맥 18대 · PC 5대는 대당 10만 원 기준 시트 금액(VAT · 배송 확정 시 변동). <span class="red">↑</span> = 1인 7만 배정액 초과 (2 · 16 · 17팀, 합계 533,800원). 팀 부담은 각 팀이 '배정액 초과분'으로 직접 표시한 금액으로, 졸준위 예산에는 넣지 않았습니다.</p>
+      </div>
+    </section>
+
+    <!-- 12. 예산 사용 순서 -->
+    <section class="slide" data-title="05 · 예산 · 사용 순서">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">05</span>예산 사용 순서 · 지원금 먼저, 회비는 마지막<span class="tag">현재 정리 기준 배분 · 단위 원</span></h2>
+        <div class="body">
+          <div class="flow">
+            <div class="step hi"><span class="k">1 · 시제품제작지원비</span><span class="big">13,560,000</span><span class="v">공간 구조물 · 장비 대여 · 인쇄물<br />1인 12만 × 113명</span></div>
+            <span class="arw">→</span>
+            <div class="step hi"><span class="k">2 · 성과전시지원비</span><span class="big">2,500,000</span><span class="v">아이맥 · PC 대여<br />캡스톤 사업비</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">3 · 전시지원비</span><span class="big">2,825,000</span><span class="v">시트지 · 조명 · 도메인<br />학과 일괄 결제</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">4 · 졸업전시 회비</span><span class="big">13,560,000</span><span class="v">오프닝 · 상품 · 회의비<br />+ 예비비</span></div>
+          </div>
+          <table class="t tight gap-l">
+            <thead><tr><th style="width: 19%">재원</th><th>배정 항목</th><th class="r" style="width: 13%">사용</th><th class="r" style="width: 13%">잔액</th></tr></thead>
+            <tbody>
+              <tr><th>시제품제작지원비</th><td>백월 4,506,000 · 테이블 대여 2,157,000 · 팀별 장비 대여 · 인쇄 3,853,460 · 브랜딩 인쇄 1,900,000</td><td class="r">12,416,460</td><td class="r">1,143,540</td></tr>
+              <tr><th>성과전시지원비</th><td>아이맥 18대 · PC 5대 대여 2,300,000</td><td class="r">2,300,000</td><td class="r">200,000</td></tr>
+              <tr><th>전시지원비</th><td>시트지 · 암막커튼 · 조명 769,900 · 졸업전시 웹사이트 도메인 118,800</td><td class="r">888,700</td><td class="r">1,936,300</td></tr>
+              <tr class="hl"><th>졸업전시 회비</th><td>오프닝 2,098,240 · 졸준위 상품 1,500,000 · 회의비 900,000 · 본부 440,000 · 영상 300,000 · IT 소모품 100,000 + <b class="yl">예비비 2,094,340</b></td><td class="r">7,432,580</td><td class="r">6,127,420</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">지원금은 정해진 사용처에만 쓸 수 있어 각 항목을 쓸 수 있는 재원 중 앞 순서부터 배정했습니다. 예비비는 사용처가 자유로운 회비에 두었습니다.</p>
+      </div>
+    </section>
+
+    <!-- 13. 시나리오 비교 -->
+    <section class="slide" data-title="05 · 예산 · 팀 배정 7~8만 vs 현재 정리">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">05</span>팀원 1인 7~8만 원 배정 vs 현재 정리 예산<span class="tag">예비비 10% 포함 · 단위 원</span></h2>
+        <div class="body">
+          <table class="t sc">
+            <thead><tr><th style="width: 26%"></th><th class="r">1인 7만 원 배정</th><th class="r">1인 8만 원 배정</th><th class="r cur">현재 정리 (장비 리스트)</th></tr></thead>
+            <tbody>
+              <tr><th>팀 항목 · 장비 대여 · 인쇄</th><td class="r">7,910,000</td><td class="r">9,040,000</td><td class="r cur">3,853,460</td></tr>
+              <tr><th>졸준위 공통 항목</th><td class="r">17,089,940</td><td class="r">17,089,940</td><td class="r cur">17,089,940</td></tr>
+              <tr><th>소요 합계</th><td class="r">24,999,940</td><td class="r">26,129,940</td><td class="r cur">20,943,400</td></tr>
+              <tr><th>예비비 (10%)</th><td class="r">2,499,994</td><td class="r">2,612,994</td><td class="r cur">2,094,340</td></tr>
+              <tr class="tot"><th>총 예산</th><td class="r">27,499,934</td><td class="r">28,742,934</td><td class="r cur">23,037,740</td></tr>
+              <tr><th>재원 32,445,000 대비</th><td class="r"><span class="bar"><i style="width: 84.8%"></i></span>84.8%</td><td class="r"><span class="bar"><i style="width: 88.6%"></i></span>88.6%</td><td class="r cur"><span class="bar"><i style="width: 71.0%"></i></span>71.0%</td></tr>
+              <tr><th>회비 사용 (예비비 포함)</th><td class="r">8,614,934</td><td class="r">9,857,934</td><td class="r cur">7,432,580</td></tr>
+              <tr class="tot"><th>회비 잔액 · 전시 후 반환</th><td class="r">4,945,066<br /><span class="dim">1인 약 43,800</span></td><td class="r">3,702,066<br /><span class="dim">1인 약 32,800</span></td><td class="r cur">6,127,420<br /><span class="dim">1인 약 54,200</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">7~8만 원 배정은 모든 팀이 배정액을 다 쓴다고 가정한 상한입니다. 7만 원이면 시제품 · 성과 · 전시지원비를 모두 소진하고 회비로 넘어갑니다. 예비비를 쓰지 않으면 그만큼 반환액이 늘어납니다.</p>
+      </div>
+    </section>
+
+    <!-- 14. 해석 · 확인 필요 -->
+    <section class="slide" data-title="05 · 예산 · 해석과 확인할 점">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">05</span>예산 정리 · 해석과 확인할 점</h2>
+        <div class="body">
+          <div class="row">
+            <div class="col card hi">
+              <h4>정리하면</h4>
+              <ul>
+                <li>1인 7~8만 원을 배정해도 총 예산은 <b>2,750만 ~ 2,874만 원</b> (예비비 포함) · 재원 안에서 가능</li>
+                <li>현재 팀들이 정리한 장비 · 인쇄 기준으로는 <b class="yl">약 2,304만 원</b> 소요 예정</li>
+                <li>현재 기준이면 지원금이 <b>약 328만 원</b> 남아, 배정액 초과 팀 · 견적 증가분을 회비 없이 흡수할 수 있음</li>
+              </ul>
+            </div>
+            <div class="col card">
+              <h4>아직 금액이 바뀔 수 있는 항목</h4>
+              <ul>
+                <li>브랜딩 · 영상 · 본부 <b>2,640,000</b> · 노션 예산안 미작성 → 2025 배정액으로 잠정 반영</li>
+                <li>오프닝 장소(다목적홀) 대관 비용 미반영</li>
+                <li>5 · 13팀이 팀 부담으로 표시한 대여 1,585,000 중 배정 한도 안 최대 <b>910,000</b> 추가 가능</li>
+                <li>아이맥 대당 금액 (VAT · 배송 포함 견적 확정 전)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="q gap-l">
+            <b>그래서 예비비 10%를 둡니다</b>
+            <p>잠정 항목과 장소 비용이 확정되면 예비비 안에서 먼저 흡수하고, 남는 회비는 전시 후 113명에게 똑같이 나눠 반환합니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15. 승인 요청 · 일정 -->
+    <section class="slide" data-title="06 · 승인 요청 · 이후 일정">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle"><span class="n">06</span>승인 요청 · 이후 일정</h2>
+        <div class="body">
+          <table class="t tight">
+            <thead><tr><th style="width: 4%">#</th><th style="width: 30%">승인 요청</th><th>내용</th></tr></thead>
+            <tbody>
+              <tr><th>1</th><td><b>팀 배정 금액</b></td><td>1인 7만 원(현재 공지) 유지 또는 8만 원 상향 · 두 경우 모두 재원 안</td></tr>
+              <tr><th>2</th><td><b>오프닝 장소</b></td><td>파라다이스홀 지하 1층 다목적홀 · 11.20(금) 대관 진행</td></tr>
+              <tr><th>3</th><td><b>4층 전시 공간 확장</b></td><td>403B · 402C 사용</td></tr>
+              <tr><th>4</th><td><b>예산 구성</b></td><td>재원 사용 순서 · 예비비 10% · 남는 회비 전시 후 반환</td></tr>
+            </tbody>
+          </table>
+          <div class="tl gap-l">
+            <div class="wk"><h5>10월 안</h5><ul>
+              <li class="due">백월 · 테이블 · 아이맥 지원금 결제</li>
+              <li>팀별 장바구니 · 장비 목록 확정</li>
+            </ul></div>
+            <div class="wk"><h5>11.02(월)</h5><ul>
+              <li class="due">10월분 지원금 정산 제출</li>
+              <li>오프닝 타임테이블 확정</li>
+            </ul></div>
+            <div class="wk"><h5>11.17 – 11.19</h5><ul>
+              <li>전시 설치 (대관 확인 후 확정)</li>
+              <li>장비 수령 · 세팅</li>
+            </ul></div>
+            <div class="wk"><h5>11.20 – 11.22</h5><ul>
+              <li class="due">11.20(금) 오프닝 · 개막</li>
+              <li>11.22(일) 전시 종료 · 철거</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16. 첨부 자료 -->
+    <section class="slide" data-title="첨부 자료 목록">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <h2 class="stitle">첨부 자료<span class="tag">1027보고 폴더</span></h2>
+        <div class="body">
+          <table class="t tight">
+            <thead><tr><th style="width: 20%">폴더</th><th>자료</th></tr></thead>
+            <tbody>
+              <tr><th>01_전시팀</th><td>전시팀 전시기획서 (10.27) · 전시팀 회의록 (09.05, 노션)</td></tr>
+              <tr><th>02_오프닝팀</th><td>오프닝팀 회의록 2 · 5 · 6주차 · 오프닝 행사 예비예산안 (노션)</td></tr>
+              <tr><th>03_하드웨어팀_장비</th><td>팀별 장비 리스트 (10.27 구글시트) · 아이맥 렌탈 견적서 2종</td></tr>
+              <tr><th>04_예산</th><td>예산 시나리오 (10.27 · 7만 / 8만 / 현재 · 재원별 배분) · 졸준위 예산 최종안 (10.12) · 팀별 예산 집계 · 2025 예산 사용 내역 · 2026-2 캡스톤지원비 사용 · 정산 지침</td></tr>
+              <tr><th>05_참고</th><td>학과 졸업작품전시계획서 · 졸준위 명단 (10.15 기준)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17. 마무리 -->
+    <section class="slide" data-title="마무리">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 27</span></div>
+        <p class="end-line">감사합니다</p>
+        <p class="end-sub">2026 디지털미디어디자인과 졸업준비위원회</p>
+      </div>
+    </section>
+
+    <button class="zone prev" aria-label="이전 슬라이드"></button>
+    <button class="zone next" aria-label="다음 슬라이드"></button>
+  </div>
+</div>
+
+<div id="progress"></div>
+
+<div id="bar">
+  <button class="btn" id="btnPrev">&#8592;</button>
+  <span id="counter"><b>1</b> / 17</span>
+  <button class="btn" id="btnNext">&#8594;</button>
+  <span class="title"><b id="curTitle"></b></span>
+  <button class="btn" id="btnOverview">개요 (O)</button>
+  <button class="btn" id="btnFull">전체화면 (F)</button>
+</div>
+
+<div id="overview">
+  <h2>슬라이드 개요 · 클릭하면 이동, ESC로 닫기</h2>
+  <div id="grid"></div>
+</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var total = slides.length;
+    var idx = 0;
+
+    var counter = document.getElementById('counter');
+    var curTitle = document.getElementById('curTitle');
+    var progress = document.getElementById('progress');
+    var overview = document.getElementById('overview');
+    var frame = document.getElementById('frame');
+    var grid = document.getElementById('grid');
+
+    // 썸네일은 본문을 복제해 생성한다 (본문을 고치면 그대로 반영됨)
+    slides.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.className = 'thumb';
+      var box = document.createElement('div');
+      box.className = 'thumb-canvas';
+      box.appendChild(s.querySelector('.canvas').cloneNode(true));
+      var meta = document.createElement('span');
+      meta.className = 'thumb-meta';
+      meta.innerHTML = '<b>' + (i + 1) + '</b> ' + (s.dataset.title || '');
+      b.appendChild(box);
+      b.appendChild(meta);
+      b.onclick = function () {
+        go(i);
+        overview.classList.remove('open');
+      };
+      grid.appendChild(b);
+    });
+    var thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+
+    // 960x540 캔버스를 프레임/썸네일 크기에 맞춰 배율 조정
+    function fit() {
+      var w = frame.clientWidth;
+      if (w) document.documentElement.style.setProperty('--s', w / 960);
+      var box = document.querySelector('.thumb-canvas');
+      if (box && box.clientWidth) document.documentElement.style.setProperty('--ts', box.clientWidth / 960);
+    }
+    window.addEventListener('resize', fit);
+    fit();
+
+    function render() {
+      slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+      thumbs.forEach(function (t, i) { t.classList.toggle('current', i === idx); });
+      counter.innerHTML = '<b>' + (idx + 1) + '</b> / ' + total;
+      curTitle.textContent = slides[idx].dataset.title || '';
+      progress.style.width = ((idx + 1) / total) * 100 + '%';
+      try { localStorage.setItem('jjw-1027', String(idx)); } catch (e) {}
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(total - 1, n)); render(); }
+    function next() { go(idx + 1); }
+    function prev() { go(idx - 1); }
+
+    document.getElementById('btnNext').onclick = next;
+    document.getElementById('btnPrev').onclick = prev;
+    document.querySelector('.zone.next').onclick = next;
+    document.querySelector('.zone.prev').onclick = prev;
+    document.getElementById('btnOverview').onclick = function () { overview.classList.toggle('open'); fit(); };
+
+    function toggleFull() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(function () {});
+      else document.exitFullscreen();
+    }
+    document.getElementById('btnFull').onclick = toggleFull;
+    document.addEventListener('fullscreenchange', function () {
+      document.body.classList.toggle('presenting', !!document.fullscreenElement);
+      fit();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      var k = e.key;
+      if (k === 'Escape') { overview.classList.remove('open'); return; }
+      if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); next(); }
+      else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); prev(); }
+      else if (k === 'Home') go(0);
+      else if (k === 'End') go(total - 1);
+      else if (k === 'o' || k === 'O') { overview.classList.toggle('open'); fit(); }
+      else if (k === 'f' || k === 'F') toggleFull();
+    });
+
+    var start = 0;
+    var h = parseInt(location.hash.replace('#', ''), 10);
+    if (h >= 1 && h <= total) start = h - 1;
+    else {
+      try {
+        var sv = parseInt(localStorage.getItem('jjw-1027'), 10);
+        if (sv >= 0 && sv < total) start = sv;
+      } catch (e) {}
+    }
+    go(start);
+  })();
+</script>
+
+</body>
+</html>
