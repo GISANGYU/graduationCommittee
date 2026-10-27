@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>학과장 피드백 공유</title>
+<style>
+  :root {
+    --bg: #0d0e12;
+    --panel: #16181f;
+    --line: #2a2d38;
+    --fg: #e8eaf0;
+    --muted: #8b90a0;
+    --accent: #4f7cff;
+    /* 슬라이드 팔레트 (9/1 학과회의 브리핑과 동일) */
+    --s-bg: #171717;
+    --s-card: #2e2e2e;
+    --s-card-hi: #2e2e16;
+    --s-yellow: #fdfd00;
+    --s-white: #ffffff;
+    --s-dim: #b0b0b0;
+    --s-head: #8a8a8a;
+    --s-rule: #666666;
+    --s-red: #ff7a7a;
+    --s-green: #7ee0a8;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Pretendard', 'Noto Sans KR', -apple-system, 'Malgun Gothic', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ---------- 무대 ---------- */
+  #stage { position: fixed; inset: 0 0 52px 0; display: grid; place-items: center; padding: 24px; }
+  #frame {
+    position: relative;
+    width: min(100%, calc((100vh - 100px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+    background: var(--s-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  }
+  .slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.18s ease; }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* 960x540 좌표계 캔버스 — --s 배율로 프레임에 맞춘다 */
+  .canvas {
+    position: absolute; top: 0; left: 0; width: 960px; height: 540px;
+    transform-origin: 0 0; transform: scale(var(--s, 1));
+    background: var(--s-bg); color: var(--s-white);
+    font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ---------- 슬라이드 공통 요소 ---------- */
+  .hd {
+    position: absolute; top: 34px; left: 52px; right: 52px;
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 300; color: var(--s-head);
+  }
+  .stitle { position: absolute; top: 70px; left: 52px; right: 52px; margin: 0; font-size: 19px; font-weight: 400; letter-spacing: -0.01em; }
+  .stitle .n { margin-right: 12px; color: var(--s-yellow); font-weight: 700; }
+  .stitle .tag { font-size: 10px; color: var(--s-head); margin-left: 10px; font-weight: 400; }
+  .body { position: absolute; left: 52px; right: 52px; top: 118px; }
+  .lead { margin: 0 0 14px; font-size: 11px; line-height: 1.7; color: var(--s-dim); }
+  .yl { color: var(--s-yellow); }
+  .dim { color: var(--s-dim); }
+  .b { font-weight: 700; }
+  .red { color: var(--s-red); font-weight: 700; }
+  .grn { color: var(--s-green); font-weight: 700; }
+
+  .row { display: flex; gap: 12px; }
+  .col { flex: 1; min-width: 0; }
+
+  .card { background: var(--s-card); border-radius: 12px; padding: 14px 16px; }
+  .card.hi { background: var(--s-card-hi); }
+  .card h4 { margin: 0 0 9px; font-size: 11.5px; font-weight: 700; color: var(--s-yellow); }
+  .card ul, .card ol { margin: 0; padding-left: 14px; }
+  .card li { font-size: 10px; line-height: 1.75; }
+  .card p { margin: 0; font-size: 10px; line-height: 1.75; color: var(--s-dim); }
+
+  table.t { width: 100%; border-collapse: collapse; font-size: 10px; }
+  table.t th, table.t td { border-bottom: 1px solid #3a3a3a; padding: 6px 9px; text-align: left; vertical-align: top; line-height: 1.55; }
+  table.t thead th { color: var(--s-yellow); font-weight: 700; border-bottom-color: #5a5a20; }
+  table.t tbody th { font-weight: 700; white-space: nowrap; }
+  table.t td.c, table.t th.c { text-align: center; }
+  table.t tr.hl td, table.t tr.hl th { background: var(--s-card-hi); }
+  table.t.tight th, table.t.tight td { padding: 4.5px 8px; }
+
+  .flow { display: flex; align-items: stretch; gap: 7px; }
+  .flow .step { flex: 1; background: var(--s-card); border-radius: 10px; padding: 11px 10px; text-align: center; }
+  .flow .step.hi { background: var(--s-card-hi); }
+  .flow .step .k { display: block; font-size: 9px; color: var(--s-yellow); font-weight: 700; margin-bottom: 5px; }
+  .flow .step .v { font-size: 10px; line-height: 1.5; }
+  .flow .arw { align-self: center; color: var(--s-rule); font-size: 12px; }
+
+  .opts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 5px; font-size: 10px; color: var(--s-dim); }
+  .opts span::before { content: '□ '; color: var(--s-yellow); }
+
+  .q { border-left: 2px solid var(--s-yellow); padding: 1px 0 1px 11px; margin: 0 0 11px; }
+  .q > b { display: block; font-size: 11px; margin-bottom: 2px; }
+  .q p { margin: 0; font-size: 10px; line-height: 1.65; color: var(--s-dim); }
+
+  .fig { background: #fff; border-radius: 8px; overflow: hidden; }
+  .fig img { display: block; width: 100%; height: auto; }
+  .cap { font-size: 9px; color: var(--s-dim); margin-top: 5px; line-height: 1.5; }
+
+  .note { position: absolute; left: 52px; right: 52px; bottom: 26px; font-size: 9.5px; color: var(--s-dim); line-height: 1.6; }
+
+  /* 표지 */
+  .cover-kicker { position: absolute; left: 52px; bottom: 124px; font-size: 20px; color: #8a8a8a; font-weight: 300; }
+  .cover-title { position: absolute; left: 52px; bottom: 60px; margin: 0; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; }
+  .cover-meta { position: absolute; right: 52px; bottom: 66px; text-align: right; font-size: 11px; line-height: 1.8; color: var(--s-dim); }
+  .end-line { position: absolute; left: 52px; right: 52px; top: 240px; text-align: center; font-size: 18px; font-weight: 700; color: var(--s-yellow); }
+  .end-sub { position: absolute; left: 52px; right: 52px; top: 278px; text-align: center; font-size: 11px; color: var(--s-dim); }
+
+  /* 순서 */
+  .agenda { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .agenda .it { display: grid; grid-template-columns: 56px 1fr; align-items: center; background: var(--s-card); border-radius: 9px; padding: 10px 12px; font-size: 11px; }
+  .agenda .it .k { color: var(--s-yellow); font-weight: 700; font-size: 10px; }
+  .agenda .it .m { text-align: right; color: var(--s-dim); font-size: 9.5px; }
+  .agenda .it .tg { font-size: 8.5px; color: var(--s-head); margin-left: 6px; }
+
+  /* 일정 타임라인 */
+  .tl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .tl .wk { background: var(--s-card); border-radius: 10px; padding: 11px 12px; }
+  .tl .wk h5 { margin: 0 0 7px; font-size: 10.5px; color: var(--s-yellow); }
+  .tl .wk ul { margin: 0; padding-left: 12px; }
+  .tl .wk li { font-size: 9.5px; line-height: 1.65; }
+  .tl .wk li .d { font-weight: 700; }
+  .tl .wk li.due { color: var(--s-yellow); }
+
+  /* ---------- 뷰어 UI ---------- */
+  .zone { position: absolute; top: 0; bottom: 0; width: 22%; z-index: 5; cursor: pointer; background: transparent; border: 0; }
+  .zone.prev { left: 0; }
+  .zone.next { right: 0; }
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 52px;
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    background: var(--panel); border-top: 1px solid var(--line); font-size: 13px;
+  }
+  #bar .title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  #bar .title b { color: var(--fg); font-weight: 500; }
+  .btn { background: #22252f; color: var(--fg); border: 1px solid var(--line); border-radius: 7px; height: 30px; padding: 0 11px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .btn:hover { background: #2c3040; }
+  #counter { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 58px; text-align: center; }
+  #counter b { color: var(--fg); }
+  #progress { position: fixed; left: 0; bottom: 52px; height: 2px; background: var(--accent); transition: width 0.18s ease; z-index: 20; }
+  #overview { position: fixed; inset: 0; z-index: 50; display: none; overflow-y: auto; padding: 28px; background: rgba(10, 11, 15, 0.97); }
+  #overview.open { display: block; }
+  #overview h2 { margin: 0 0 20px; font-size: 15px; font-weight: 500; color: var(--muted); }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .thumb { padding: 0; overflow: hidden; text-align: left; font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+  .thumb:hover { border-color: var(--accent); }
+  .thumb.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .thumb-canvas { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--s-bg); }
+  .thumb-canvas .canvas { transform: scale(var(--ts, 0.27)); }
+  .thumb-meta { display: block; padding: 9px 11px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+  .thumb-meta b { color: var(--fg); margin-right: 6px; }
+
+  body.presenting #bar, body.presenting #progress { display: none; }
+  body.presenting #stage { inset: 0; padding: 0; }
+  body.presenting #frame { width: min(100vw, calc(100vh * 16 / 9)); border-radius: 0; box-shadow: none; }
+
+  .tbd { color: var(--s-yellow); border-bottom: 1px dashed var(--s-yellow); padding: 0 2px; }
+  .flow .step .big { display: block; font-size: 15px; font-weight: 700; margin: 2px 0; }
+  .x::before { content: '✕ '; color: var(--s-red); font-weight: 700; }
+  .o::before { content: '○ '; color: var(--s-green); font-weight: 700; }
+  ul.plain { list-style: none; padding-left: 0 !important; }
+
+  /* 1022 덱 · 슬라이드 하단 여백을 줄이도록 간격 · 글자 크기 확대 */
+  .agenda { gap: 10px 16px; }
+  .agenda .it { grid-template-columns: 44px 1fr auto; padding: 15px 18px; font-size: 12.5px; }
+  .agenda .it .k { font-size: 11px; }
+  .agenda .it .m { font-size: 10.5px; color: var(--s-yellow); white-space: nowrap; padding-left: 12px; }
+  .agenda .it .tg { font-size: 9.5px; }
+  .lead { font-size: 12px; margin-bottom: 18px; }
+  .flow { gap: 9px; }
+  .flow .step { padding: 17px 12px; }
+  .flow .step .k { font-size: 10px; margin-bottom: 7px; }
+  .flow .step .v { font-size: 11.5px; line-height: 1.65; }
+  .card { padding: 18px 20px; }
+  .card h4 { font-size: 13px; margin-bottom: 11px; }
+  .card li { font-size: 11px; line-height: 1.95; }
+  .q { padding-left: 13px; }
+  .q > b { font-size: 12px; margin-bottom: 4px; }
+  .q p { font-size: 11px; line-height: 1.75; }
+  table.t { font-size: 11px; }
+  table.t th, table.t td { padding: 9px 10px; }
+  table.t.tight th, table.t.tight td { padding: 8px 10px; }
+  .tl { gap: 12px; }
+  .tl .wk { padding: 16px 16px; }
+  .tl .wk h5 { font-size: 13px; margin-bottom: 11px; }
+  .tl .wk li { font-size: 11px; line-height: 1.9; margin-bottom: 4px; }
+  .note { font-size: 10.5px; }
+  .gap-l { margin-top: 22px !important; }
+
+
+  /* 1027 덱 · 보고용 표 · 그림 */
+  .fig img { max-height: 100%; }
+  table.t td.r, table.t th.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.t.eq { font-size: 9.6px; }
+  table.t.eq th, table.t.eq td { padding: 4.6px 6px; }
+  table.t.eq thead th { line-height: 1.25; vertical-align: bottom; }
+  table.t.eq thead th span { font-size: 8px; color: var(--s-head); font-weight: 400; }
+  table.t tr.sum th, table.t tr.sum td { font-weight: 700; color: var(--s-yellow); border-top: 1px solid #5a5a20; }
+  table.t.sc { font-size: 11px; }
+  table.t.sc th, table.t.sc td { padding: 6.6px 12px; }
+  table.t.sc .cur { background: var(--s-card-hi); }
+  table.t.sc thead th.cur { color: var(--s-yellow); }
+  table.t.sc tr.tot th, table.t.sc tr.tot td { font-weight: 700; font-size: 12.5px; }
+  table.t.sc tr.tot td .dim { font-size: 9.5px; font-weight: 400; }
+  .bar { display: inline-block; width: 70px; height: 6px; margin-right: 8px; vertical-align: middle; background: #3a3a3a; border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--s-yellow); }
+  .card ol { padding-left: 16px; }
+
+  /* 1029 덱 · 피드백 공유용 */
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9.5px; background: #3a3a3a; color: var(--s-dim); white-space: nowrap; }
+  .pill.y { background: var(--s-card-hi); color: var(--s-yellow); }
+  .pill.g { background: #1d3a2a; color: var(--s-green); font-weight: 700; }
+  .keys { display: flex; gap: 14px; }
+  .kr { flex: 1; text-align: center; position: relative; padding-top: 22px; }
+  .kr i { position: absolute; top: 0; left: 50%; width: 26px; height: 26px; margin-left: -13px; border: 3px solid #c9c9c9; border-radius: 50%; }
+  .kr .tile { position: relative; background: #fff; border-radius: 14px; padding: 8px; box-shadow: 0 0 0 1px rgba(255,255,255,0.5) inset, 0 8px 18px rgba(0,0,0,0.45); }
+  .kr .tile::before { content: ''; position: absolute; top: 5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--s-bg); }
+  .kr .tile img { display: block; width: 100%; height: 120px; object-fit: cover; border-radius: 8px; }
+  .kr span { display: block; margin-top: 7px; font-size: 10.5px; color: var(--s-dim); }
+  .desk { position: relative; height: 300px; border-radius: 10px; background: linear-gradient(135deg, #d9c3a3, #c7ab86); overflow: hidden; }
+  .desk .pad { position: absolute; left: 24px; top: 20px; width: 300px; height: 190px; border-radius: 12px; background: url(assets/op_mousepad.jpg) center / 150% auto; box-shadow: 0 10px 18px rgba(0,0,0,0.3); }
+  .desk .pad { background: url(assets/op_mousepad.jpg) 46% 52% / 128% auto; }
+  .desk .rest { position: absolute; left: 24px; top: 232px; width: 300px; height: 48px; border-radius: 24px; background: url(assets/op_mousepad.jpg) 20% 40% / 200% auto; box-shadow: 0 10px 16px rgba(0,0,0,0.35), inset 0 -6px 10px rgba(0,0,0,0.12); }
+  .desk .rest2 { position: absolute; left: 346px; top: 150px; width: 96px; height: 60px; border-radius: 30px 30px 18px 18px; background: url(assets/op_mousepad.jpg) 80% 70% / 400% auto; box-shadow: 0 10px 16px rgba(0,0,0,0.35), inset 0 -6px 10px rgba(0,0,0,0.12); }
+  svg.dia { display: block; width: 100%; height: auto; background: #1f1f1f; border-radius: 10px; }
+  h4.sub { margin: 4px 0 6px; font-size: 12px; color: var(--s-yellow); }
+  tbody.dimrow td { color: var(--s-head); }
+  ul.mini { margin: 10px 0 0; padding-left: 14px; }
+  ul.mini li { font-size: 10.5px; line-height: 1.8; color: var(--s-dim); }
+
+  @media print {
+    @page { size: 960px 540px; margin: 0; }
+    body { overflow: visible; background: #fff; }
+    #bar, #progress, #overview, .zone { display: none !important; }
+    #stage { position: static; inset: auto; padding: 0; display: block; }
+    #frame { width: 960px; height: auto; aspect-ratio: auto; box-shadow: none; border-radius: 0; overflow: visible; background: none; }
+    .slide { position: relative; width: 960px; height: 540px; opacity: 1 !important; visibility: visible !important; page-break-after: always; overflow: hidden; }
+    .slide .canvas { transform: none; }
+  }
+</style>
+<body>
+
+<div id="stage">
+  <div id="frame">
+
+
+    <!-- 1. 표지 -->
+    <section class="slide" data-title="표지">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <p class="cover-kicker">10.27 학과장님 보고 이후 · 팀별 반영 사항</p>
+        <h1 class="cover-title">학과장 피드백 공유</h1>
+        <div class="cover-meta">10월 29일(목) 졸준위 팀장회의<br />졸업준비위원회 위원장 유기상</div>
+      </div>
+    </section>
+
+    <!-- 2. 한눈에 -->
+    <section class="slide" data-title="피드백 한눈에 보기">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle">피드백 한눈에 보기<span class="tag">10.27(화) 학과장님 최종 보고 후</span></h2>
+        <div class="body">
+          <table class="t tight">
+            <thead><tr><th style="width: 4%">#</th><th style="width: 12%">담당</th><th>피드백</th><th style="width: 15%">상태</th><th class="r" style="width: 7%">장</th></tr></thead>
+            <tbody>
+              <tr><th>1</th><td>오프닝팀</td><td><b>브랜딩 마우스패드 호평</b> · 같은 아이덴티티로 <b>알파벳 이니셜 키링</b> · <b>손목보호대</b>도 검토</td><td><span class="pill y">품목 확인 요청</span></td><td class="r">3–6</td></tr>
+              <tr><th>2</th><td>오프닝팀</td><td><b>핑거푸드</b> 140~150인분 · 1인 5천~1만 원 (약 70~150만 원)</td><td><span class="pill y">반영 검토</span></td><td class="r">7</td></tr>
+              <tr><th>3</th><td>전시팀</td><td>작년 커튼이 짧아 벽 하단 전선 · 잡동사니가 보임 → <b>기장 해결</b> (연장 · 새로 구매)</td><td><span class="pill y">방법 · 견적</span></td><td class="r">8</td></tr>
+              <tr><th>4</th><td>전시팀</td><td>벽마다 어디에 커튼을 다는지 <b>조감도식 커튼 배치도</b> 작성</td><td><span class="pill y">작성 요청</span></td><td class="r">9</td></tr>
+              <tr><th>5</th><td>전시 · 본부</td><td>회비가 남으면 <b>접이식 포토월</b> 하나 더 · 학과에 남기는 비품</td><td><span class="pill">여유 있으면</span></td><td class="r">10</td></tr>
+              <tr class="hl"><th>6</th><td>브랜딩팀</td><td>아이덴티티 강화용 <b>포스터 · 기타 비용 추가 책정</b> · 예산 안에서 가능한 만큼</td><td><span class="pill g">승인 완료</span></td><td class="r">11</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">예산은 10.27 보고의 '현재 정리' 기준 잔액으로 계산했습니다 (12장). 지원금으로 결제할 항목은 <span class="yl">10월 안에 결제</span>해야 11월에 쓸 수 있습니다.</p>
+      </div>
+    </section>
+
+    <!-- 3. 마우스패드 -->
+    <section class="slide" data-title="01 · 오프닝 · 브랜딩 마우스패드 호평">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">01</span>기념 선물 · 브랜딩 마우스패드가 좋은 반응<span class="tag">오프닝팀</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 22px; align-items: flex-start;">
+            <div style="width: 430px; flex: none;">
+              <div class="fig"><img src="assets/op_mousepad.jpg" alt="브랜딩 마우스패드 시안" /></div>
+              <p class="cap">오프닝팀 5주차 회의록 · 브랜딩 마우스패드 시안 (10.27 보고 자료)</p>
+            </div>
+            <div class="col">
+              <div class="q"><b>학과장님 의견</b><p>"브랜딩 마우스패드 굉장히 마음에 든다. 이런 식으로 브랜딩 아이덴티티를 녹인 선물을 더 해 보면 어떠냐."</p></div>
+              <div class="q"><b>추가로 제안하신 품목</b><p><span class="yl b">알파벳 이니셜 키링</span> · 이름 이니셜 한 글자 (유기상 → Y)<br /><span class="yl b">손목보호대</span> · 마우스패드와 같은 그래픽</p></div>
+              <div class="card hi" style="margin-top: 16px;">
+                <h4>오프닝팀 확인 요청</h4>
+                <ul>
+                  <li>선물 품목이 <b>아직 확정 전</b>이면 두 품목 추가 · 교체 검토</li>
+                  <li>이미 발주한 품목이 있으면 그 상태를 공유</li>
+                  <li>마우스패드 + 손목보호대 <b>세트 구성</b>도 가능한지</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 알파벳 키링 -->
+    <section class="slide" data-title="01 · 오프닝 · 알파벳 이니셜 키링">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">01</span>알파벳 이니셜 키링 · LET'S SYNC! 글자를 그대로<span class="tag">레퍼런스 = 브랜딩 포스터 · 부스 실사 목업</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 18px; align-items: flex-start;">
+            <div style="width: 150px; flex: none;">
+              <div class="fig"><img src="assets/ex_poster.jpg" alt="브랜딩 포스터" /></div>
+              <p class="cap">브랜딩 포스터 · 글자마다 패턴이 다름</p>
+            </div>
+            <div class="col">
+              <div class="keys">
+                <div class="kr"><i></i><div class="tile"><img src="assets/lt_Y.jpg" alt="Y" /></div><span>Y · 유기상</span></div>
+                <div class="kr"><i></i><div class="tile"><img src="assets/lt_S.jpg" alt="S" /></div><span>S</span></div>
+                <div class="kr"><i></i><div class="tile"><img src="assets/lt_C.jpg" alt="C" /></div><span>C</span></div>
+                <div class="kr"><i></i><div class="tile"><img src="assets/lt_E.jpg" alt="E" /></div><span>E</span></div>
+              </div>
+              <p class="cap" style="margin-top: 8px;">포스터에서 글자를 잘라 만든 키링 예시 이미지 · 실제 제작은 브랜딩팀 원본 벡터 사용</p>
+              <div class="row" style="margin-top: 14px;">
+                <div class="col card">
+                  <h4>지금 있는 글자</h4>
+                  <p style="font-size: 11px;"><b class="yl" style="font-size: 15px; letter-spacing: 0.12em;">L E T S Y N C</b><br />7글자 · 나머지 글자는 <b>브랜딩팀이 같은 스타일로 추가</b>해야 함</p>
+                </div>
+                <div class="col card">
+                  <h4>확인할 것</h4>
+                  <ul>
+                    <li>이니셜 기준 (성 · 이름 첫 글자) → 명단에서 <b>필요 글자 수</b> 집계</li>
+                    <li>아크릴 양면 인쇄 · 크기 · 고리 · 133개 견적</li>
+                    <li>사람마다 글자가 달라 <b>이름별 포장 · 배부</b></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 손목보호대 -->
+    <section class="slide" data-title="01 · 오프닝 · 브랜딩 손목보호대">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">01</span>브랜딩 손목보호대 · 마우스패드와 한 세트로<span class="tag">오프닝팀 · 브랜딩팀</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 22px; align-items: flex-start;">
+            <div style="width: 470px; flex: none;">
+              <div class="desk">
+                <div class="pad"></div>
+                <div class="rest"></div>
+                <div class="rest2"></div>
+              </div>
+              <p class="cap">마우스패드 시안 그래픽으로 합성한 세트 예시 이미지 · 위: 마우스패드 · 아래: 키보드용 · 마우스용 손목보호대</p>
+            </div>
+            <div class="col">
+              <div class="q"><b>왜 잘 맞는지</b><p>마우스패드와 같은 원 · 스트라이프 그래픽을 쓰면 한 세트로 보이고, 졸업 후에도 책상 위에 계속 남는 선물이 됩니다.</p></div>
+              <div class="card">
+                <h4>종류 · 확인할 것</h4>
+                <ul>
+                  <li><b>키보드용</b> (긴 막대형) · <b>마우스용</b> (작은 쿠션형) · <b>일체형</b> (마우스패드 + 쿠션)</li>
+                  <li>인쇄 방식 (승화전사 · UV) · 쿠션 두께 · 최소 주문 수량</li>
+                  <li>133개 견적 · 마우스패드와 묶음 할인 가능한지</li>
+                </ul>
+              </div>
+              <p class="cap" style="margin-top: 10px;">참고 · 인쇄 없는 일체형 완제품은 3,000원대부터 (다이소몰) · 브랜딩 인쇄 주문 제작은 업체 견적 필요</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 선물 정리 -->
+    <section class="slide" data-title="01 · 오프닝 · 선물 품목 정리">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">01</span>졸업생 · 교수님 선물 · 후보 정리<span class="tag">약 133개 (졸업생 113 + 교수님)</span></h2>
+        <div class="body">
+          <table class="t tight">
+            <thead><tr><th style="width: 20%">품목</th><th style="width: 18%">구분</th><th>메모</th><th style="width: 18%">오프닝팀 확인</th></tr></thead>
+            <tbody>
+              <tr class="hl"><th>브랜딩 마우스패드</th><td>기존 후보 · <span class="yl">호평</span></td><td>학과장님이 가장 마음에 들어 하신 품목</td><td>유지 권장</td></tr>
+              <tr><th>종이 방향제</th><td>기존 후보</td><td>브랜딩 패키지 가능 · 부피 작음</td><td>확정 여부</td></tr>
+              <tr><th>석고 방향제</th><td>기존 후보</td><td>수작업 · 파손 주의</td><td>확정 여부</td></tr>
+              <tr><th>알파벳 이니셜 키링</th><td><span class="yl">추가 제안</span></td><td>개인 맞춤 · 브랜딩팀 글자 추가 필요 · 이름별 배부</td><td>견적 · 일정</td></tr>
+              <tr><th>브랜딩 손목보호대</th><td><span class="yl">추가 제안</span></td><td>마우스패드와 세트 구성 가능</td><td>견적</td></tr>
+            </tbody>
+          </table>
+          <div class="row gap-l">
+            <div class="col q"><b>예산</b><p>선물은 회비로 집행합니다. 오프닝 행사 예산 2,098,240원 안에서 먼저 조정하고, 늘어나는 금액은 회비 잔액에서 씁니다 (12장).</p></div>
+            <div class="col q"><b>다음 회의까지</b><p>후보별 단가 · 최소 수량 · 제작 기간을 표로 정리해 주세요. 11.20 오프닝 전 수령 가능한지가 기준입니다.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 핑거푸드 -->
+    <section class="slide" data-title="02 · 오프닝 · 핑거푸드">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">02</span>오프닝 핑거푸드 · 140~150인분<span class="tag">오프닝팀 · 회비</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 20px; align-items: flex-start;">
+            <div class="col" style="flex: 1.05;">
+              <p class="lead" style="margin-bottom: 12px;">졸업생 113명 + 교수님 + 기타 손님을 생각해 <span class="yl">140~150인분</span>으로 준비하자는 의견입니다.</p>
+              <table class="t sc">
+                <thead><tr><th>인원</th><th class="r">1인 5,000원</th><th class="r cur">1인 10,000원</th></tr></thead>
+                <tbody>
+                  <tr><th>140인분</th><td class="r">700,000</td><td class="r cur">1,400,000</td></tr>
+                  <tr class="tot"><th>150인분</th><td class="r">750,000</td><td class="r cur">1,500,000</td></tr>
+                </tbody>
+              </table>
+              <p class="cap" style="margin-top: 8px;">학과장님 기준 · 5천 원이면 약 70만, 1만 원이면 약 140만 원</p>
+            </div>
+            <div class="col">
+              <div class="card">
+                <h4>구성 예시 (견적 받을 때 기준)</h4>
+                <ul>
+                  <li>한입 카나페 · 미니 샌드위치 · 과일컵 · 쿠키</li>
+                  <li>와인잔 세레모니 음료와 연결 (SYNC 컨셉)</li>
+                  <li>서서 먹는 구성 · 접시 없이 한 손으로</li>
+                </ul>
+              </div>
+              <div class="card hi" style="margin-top: 12px;">
+                <h4>확인할 것</h4>
+                <ul>
+                  <li>장소 (다목적홀 · 승인 대기) <b>음식 반입 · 취식</b> 가능 여부</li>
+                  <li>업체 2곳 이상 견적 · 배달 시간 · 세팅 포함 여부</li>
+                  <li>테이블 · 쓰레기 처리 · 남는 음식</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. 커튼 기장 -->
+    <section class="slide" data-title="03 · 전시 · 커튼 기장">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">03</span>커튼 기장 · 벽 하단이 보이지 않게<span class="tag">전시팀 · 전시지원비</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 20px; align-items: flex-start;">
+            <div style="width: 470px; flex: none;">
+              <svg viewBox="0 0 470 250" class="dia" aria-label="커튼 기장 비교 그림">
+                <g font-size="11" fill="#b0b0b0">
+                  <text x="10" y="16" fill="#ff7a7a" font-weight="700">작년 · 커튼이 짧음</text>
+                  <text x="248" y="16" fill="#7ee0a8" font-weight="700">올해 · 바닥까지</text>
+                </g>
+                <!-- AS-IS -->
+                <rect x="10" y="28" width="215" height="196" fill="#2e2e2e" />
+                <line x1="10" y1="40" x2="225" y2="40" stroke="#ddd" stroke-width="3" />
+                <path d="M16 42 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 V178 H16 Z" fill="#555" />
+                <g stroke="#555" stroke-opacity="0.9"><line x1="32" y1="46" x2="32" y2="176" /><line x1="64" y1="46" x2="64" y2="176" /><line x1="96" y1="46" x2="96" y2="176" /><line x1="128" y1="46" x2="128" y2="176" /><line x1="160" y1="46" x2="160" y2="176" /><line x1="192" y1="46" x2="192" y2="176" /></g>
+                <path d="M30 214 c20 -14 40 8 60 -4 s40 10 60 -2 s30 6 50 -6" stroke="#fdfd00" stroke-width="3" fill="none" />
+                <path d="M40 218 c25 -8 50 4 80 -6 s50 6 80 0" stroke="#ff7a7a" stroke-width="2.5" fill="none" />
+                <rect x="150" y="196" width="34" height="22" rx="2" fill="#8a8a8a" />
+                <rect x="60" y="202" width="22" height="16" rx="2" fill="#666" />
+                <line x1="10" y1="224" x2="225" y2="224" stroke="#ddd" stroke-width="2" />
+                <line x1="214" y1="180" x2="214" y2="222" stroke="#ff7a7a" stroke-width="1.5" />
+                <text x="118" y="192" font-size="10" fill="#ff7a7a" text-anchor="middle">빈틈 → 전선 · 멀티탭 · 박스가 보임</text>
+                <!-- TO-BE -->
+                <rect x="248" y="28" width="215" height="196" fill="#2e2e2e" />
+                <line x1="248" y1="40" x2="463" y2="40" stroke="#ddd" stroke-width="3" />
+                <path d="M254 42 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 16 0 V226 H254 Z" fill="#555" />
+                <path d="M254 186 H462 V226 H254 Z" fill="#7a7a7a" />
+                <g stroke="#666"><line x1="270" y1="46" x2="270" y2="224" /><line x1="302" y1="46" x2="302" y2="224" /><line x1="334" y1="46" x2="334" y2="224" /><line x1="366" y1="46" x2="366" y2="224" /><line x1="398" y1="46" x2="398" y2="224" /><line x1="430" y1="46" x2="430" y2="224" /></g>
+                <line x1="248" y1="224" x2="463" y2="224" stroke="#ddd" stroke-width="2" />
+                <text x="356" y="210" font-size="10" fill="#171717" text-anchor="middle" font-weight="700">연장 · 새 커튼 · 하단 가림</text>
+                <line x1="452" y1="44" x2="452" y2="222" stroke="#7ee0a8" stroke-width="1.5" />
+                <text x="446" y="134" font-size="9.5" fill="#7ee0a8" text-anchor="end">레일~바닥 실측 +2~3cm</text>
+                <text x="10" y="243" font-size="9.5" fill="#8a8a8a">예시 그림 · 실제 높이는 벽마다 실측</text>
+              </svg>
+            </div>
+            <div class="col">
+              <div class="q"><b>학과장님 의견</b><p>작년에 커튼 길이가 짧아 벽 하단에 전선 다발 · 잡동사니가 보여 보기 좋지 않았다. 길이 해결 방법을 찾고 새로 구매하거나 연장하는 방향으로 알아볼 것.</p></div>
+              <table class="t tight">
+                <thead><tr><th style="width: 30%">방법</th><th>메모</th></tr></thead>
+                <tbody>
+                  <tr><th>밑단 연장</th><td>같은 암막 원단을 덧대 박음질 · 기존 커튼 재사용</td></tr>
+                  <tr><th>새로 구매</th><td>세로 기장 맞춤 주문 · 링 시공 시 처짐 반영</td></tr>
+                  <tr><th>하단 가림</th><td>바닥 쪽에 검정 원단 · 시트지 띠를 한 번 더</td></tr>
+                </tbody>
+              </table>
+              <p class="cap" style="margin-top: 8px;">작년 암막커튼 59,900원 (2025 전시팀) · 올해 전시지원비 잔액 1,936,300원 안에서 · <span class="yl">10월 안 결제</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. 커튼 배치도 -->
+    <section class="slide" data-title="03 · 전시 · 커튼 배치도">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">03</span>커튼 배치도 · 벽마다 어디에 다는지<span class="tag">전시팀 · 작성 요청</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 20px; align-items: flex-start;">
+            <div style="width: 440px; flex: none;">
+              <div class="fig"><img src="assets/ex_zones.jpg" alt="전시기획서 공간 연출 위치도" /></div>
+              <p class="cap">레퍼런스 · 전시기획서 '공간 연출 위치' 장 · 이 도면에 커튼 위치를 같은 방식으로 표시</p>
+              <div class="fig" style="margin-top: 10px; width: 300px;"><img src="assets/ex_plan5f.jpg" alt="5층 평면" /></div>
+            </div>
+            <div class="col">
+              <div class="q"><b>학과장님 요청</b><p>조감도처럼 벽마다 어디에 커튼을 배치하는지 배치도를 만들 것.</p></div>
+              <h4 class="sub">배치도에 들어갈 것</h4>
+              <table class="t tight">
+                <thead><tr><th>벽 번호</th><th>위치</th><th class="r">폭</th><th class="r">기장</th><th>방법</th></tr></thead>
+                <tbody class="dimrow">
+                  <tr><th>W-01</th><td>예) CS 입구 왼쪽</td><td class="r">m</td><td class="r">m</td><td>연장</td></tr>
+                  <tr><th>W-02</th><td></td><td class="r"></td><td class="r"></td><td></td></tr>
+                  <tr><th>W-03</th><td></td><td class="r"></td><td class="r"></td><td></td></tr>
+                </tbody>
+              </table>
+              <ul class="mini">
+                <li>5층 · 4층 도면에 벽 번호를 붙이고 커튼 구간을 색으로 표시</li>
+                <li>벽마다 레일 높이 · 폭 실측 → 기장 · 수량 · 견적으로 연결</li>
+                <li>콘센트 · 전선이 지나가는 벽은 따로 표시</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. 포토월 -->
+    <section class="slide" data-title="04 · 접이식 포토월 (여유 있으면)">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">04</span>접이식 포토월 하나 더 · 학과에 남기는 비품<span class="tag">회비가 남으면</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 20px; align-items: flex-start;">
+            <div style="width: 440px; flex: none;">
+              <svg viewBox="0 0 440 210" class="dia" aria-label="접이식 포토월 그림">
+                <defs>
+                  <pattern id="pw" width="26" height="26" patternUnits="userSpaceOnUse"><rect width="26" height="26" fill="#fff" /><circle cx="13" cy="13" r="6" fill="#e6007e" /></pattern>
+                </defs>
+                <text x="10" y="16" font-size="11" fill="#fdfd00" font-weight="700">펼친 모습</text>
+                <g transform="translate(10,30)">
+                  <polygon points="0,10 70,0 70,150 0,160" fill="url(#pw)" stroke="#ddd" />
+                  <polygon points="70,0 140,10 140,160 70,150" fill="#f2f2f2" stroke="#ddd" />
+                  <polygon points="140,10 210,0 210,150 140,160" fill="url(#pw)" stroke="#ddd" />
+                  <polygon points="210,0 280,10 280,160 210,150" fill="#f2f2f2" stroke="#ddd" />
+                  <text x="140" y="92" font-size="17" font-weight="800" fill="#e6007e" text-anchor="middle">LET'S SYNC!</text>
+                </g>
+                <text x="320" y="16" font-size="11" fill="#fdfd00" font-weight="700">접은 모습</text>
+                <g transform="translate(330,60)">
+                  <rect x="0" y="0" width="22" height="110" fill="#f2f2f2" stroke="#ddd" />
+                  <rect x="6" y="-4" width="22" height="110" fill="#fff" stroke="#ddd" />
+                  <rect x="12" y="-8" width="22" height="110" fill="#f2f2f2" stroke="#ddd" />
+                  <rect x="18" y="-12" width="22" height="110" fill="#fff" stroke="#ddd" />
+                  <text x="20" y="128" font-size="9.5" fill="#b0b0b0" text-anchor="middle">가방 · 과사 보관</text>
+                </g>
+                <text x="10" y="205" font-size="9.5" fill="#8a8a8a">예시 그림 · 패널 수 · 크기는 견적 받으며 정함</text>
+              </svg>
+            </div>
+            <div class="col">
+              <div class="q"><b>학과장님 의견</b><p>회비 예산이 남으면 기존 포토월에 더해 접이식으로 하나 더 알아보면 어떠냐. 학과에 남길 수 있는 요소로. <span class="dim">(되면 하는 항목)</span></p></div>
+              <div class="card">
+                <h4>알아볼 것</h4>
+                <ul>
+                  <li>팝업 · 접이식 프레임 + <b>원단 그래픽 교체형</b> → 매년 그래픽만 바꿔 재사용</li>
+                  <li>크기 · 무게 · 설치 시간 · <b>학과 보관 공간</b></li>
+                  <li>견적 2곳 이상 · 그래픽은 브랜딩팀 포토월 시안 활용</li>
+                </ul>
+              </div>
+              <p class="cap" style="margin-top: 10px;">기존 포토월 · CS 사물함 쪽 백월 7개 (대여 693,000원, 시제품제작비)<br />접이식 포토월은 다른 항목이 정리된 뒤 회비 잔액으로 마지막에 결정</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. 브랜딩 -->
+    <section class="slide" data-title="05 · 브랜딩 아이덴티티 강화 (승인)">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">05</span>브랜딩 아이덴티티 강화 · 추가 비용 승인<span class="tag">브랜딩팀 · 승인 완료</span></h2>
+        <div class="body">
+          <div class="row" style="gap: 16px; align-items: flex-start;">
+            <div style="width: 150px; flex: none;">
+              <div class="fig"><img src="assets/ex_poster.jpg" alt="브랜딩 포스터" /></div>
+              <p class="cap">LET'S SYNC! 포스터</p>
+            </div>
+            <div style="width: 300px; flex: none;">
+              <div class="fig"><img src="assets/ex_mockup.jpg" alt="부스 실사 목업" /></div>
+              <p class="cap">부스 실사 목업 · 백월까지 같은 그래픽</p>
+            </div>
+            <div class="col">
+              <div class="q"><b>승인 내용</b><p>브랜딩 아이덴티티 강화 요소로 <b>포스터 비용 · 기타 비용</b>을 추가 책정. 예산 안에서 가능한 만큼 사용.</p></div>
+              <div class="card hi">
+                <h4>브랜딩팀 요청</h4>
+                <ul>
+                  <li>추가할 인쇄물 목록 · 수량 · 견적</li>
+                  <li>교내 게시 포스터 추가 · 입구 · 층간 안내 등</li>
+                  <li>선물 (키링 · 손목보호대) · 접이식 포토월 그래픽 작업 범위</li>
+                </ul>
+              </div>
+              <p class="cap" style="margin-top: 10px;">브랜딩 인쇄는 시제품제작지원비 항목 · 잔액 <b class="yl">1,143,540원</b> · 10월 안 결제</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. 예산 -->
+    <section class="slide" data-title="06 · 예산 · 새 항목은 어디서">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">06</span>새 항목 예산 · 남은 재원 안에서<span class="tag">10.27 보고 '현재 정리' 기준 · 단위 원</span></h2>
+        <div class="body">
+          <table class="t tight">
+            <thead><tr><th style="width: 24%">항목</th><th style="width: 17%">재원</th><th class="r" style="width: 15%">재원 잔액</th><th class="r" style="width: 18%">예상 금액</th><th>메모</th></tr></thead>
+            <tbody>
+              <tr><th>브랜딩 포스터 · 기타</th><td>시제품제작지원비</td><td class="r">1,143,540</td><td class="r"><span class="tbd">견적</span></td><td>승인 완료 · 잔액 안에서 가능한 만큼</td></tr>
+              <tr><th>커튼 연장 · 구매</th><td>전시지원비</td><td class="r">1,936,300</td><td class="r"><span class="tbd">견적</span></td><td>배치도 실측 후 수량 확정</td></tr>
+              <tr><th>핑거푸드 140~150인분</th><td>회비</td><td class="r" rowspan="3" style="vertical-align: middle;">6,127,420</td><td class="r">700,000 – 1,500,000</td><td>1인 5천 ~ 1만 원</td></tr>
+              <tr><th>선물 추가 (키링 · 손목보호대)</th><td>회비</td><td class="r"><span class="tbd">견적</span></td><td>오프닝 예산 2,098,240 안에서 먼저 조정</td></tr>
+              <tr><th>접이식 포토월</th><td>회비</td><td class="r"><span class="tbd">견적</span></td><td>마지막 순서 · 남으면</td></tr>
+            </tbody>
+          </table>
+          <div class="row gap-l">
+            <div class="col q"><b>지원금 항목은 10월 안</b><p>포스터 · 커튼은 지원금으로 결제하므로 <span class="yl">10.30(금)까지 견적 · 장바구니</span>가 나와야 10월 안에 결제할 수 있습니다.</p></div>
+            <div class="col q"><b>회비 잔액은 예비비 별도</b><p>회비 잔액 6,127,420원은 예비비 2,094,340원을 뺀 금액입니다. 팀 배정 7만 원 기준이면 4,945,066원입니다. 남는 회비는 전시 후 반환합니다.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. 할 일 -->
+    <section class="slide" data-title="07 · 팀별 할 일 · 일정">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <h2 class="stitle"><span class="n">07</span>팀별 할 일 · 일정</h2>
+        <div class="body">
+          <div class="tl">
+            <div class="wk"><h5>오프닝팀</h5><ul>
+              <li>선물 확정 여부 공유 · 키링 · 손목보호대 견적</li>
+              <li>핑거푸드 업체 견적 2곳+</li>
+              <li>다목적홀 음식 반입 확인</li>
+            </ul></div>
+            <div class="wk"><h5>전시팀</h5><ul>
+              <li>벽별 레일 높이 · 폭 실측</li>
+              <li>커튼 배치도 (5층 · 4층)</li>
+              <li class="due">커튼 연장 · 구매 견적</li>
+            </ul></div>
+            <div class="wk"><h5>브랜딩팀</h5><ul>
+              <li class="due">추가 포스터 · 인쇄물 목록 · 견적</li>
+              <li>키링용 글자 추가 범위 확인</li>
+              <li>손목보호대 · 포토월 그래픽</li>
+            </ul></div>
+            <div class="wk"><h5>본부</h5><ul>
+              <li>회비 잔액 기준 우선순위 정리</li>
+              <li>접이식 포토월 견적 · 보관 공간 확인</li>
+              <li>학과장님께 결과 보고</li>
+            </ul></div>
+          </div>
+          <div class="flow gap-l">
+            <div class="step hi"><span class="k">10.29(목)</span><span class="v">팀장회의 · 피드백 공유</span></div>
+            <span class="arw">→</span>
+            <div class="step hi"><span class="k">10.30(금)</span><span class="v">지원금 항목 견적 · 장바구니<br />포스터 · 커튼</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">11.05(목)</span><span class="v">다음 팀장회의<br />선물 · 핑거푸드 · 포토월 확정</span></div>
+            <span class="arw">→</span>
+            <div class="step"><span class="k">11.20(금)</span><span class="v">오프닝 · 개막</span></div>
+          </div>
+        </div>
+        <p class="note">노란 글씨 = 지원금 결제 항목 (10월 안). 11.05는 매주 목요일 팀장회의 기준이며 바뀌면 다시 공지합니다.</p>
+      </div>
+    </section>
+
+    <!-- 14. 마무리 -->
+    <section class="slide" data-title="마무리">
+      <div class="canvas">
+        <div class="hd"><span>Digital Media Design</span><span>2026. 10. 29</span></div>
+        <p class="end-line">감사합니다</p>
+        <p class="end-sub">2026 디지털미디어디자인과 졸업준비위원회</p>
+      </div>
+    </section>
+
+    <button class="zone prev" aria-label="이전 슬라이드"></button>
+    <button class="zone next" aria-label="다음 슬라이드"></button>
+  </div>
+</div>
+
+<div id="progress"></div>
+
+<div id="bar">
+  <button class="btn" id="btnPrev">&#8592;</button>
+  <span id="counter"><b>1</b> / 14</span>
+  <button class="btn" id="btnNext">&#8594;</button>
+  <span class="title"><b id="curTitle"></b></span>
+  <button class="btn" id="btnOverview">개요 (O)</button>
+  <button class="btn" id="btnFull">전체화면 (F)</button>
+</div>
+
+<div id="overview">
+  <h2>슬라이드 개요 · 클릭하면 이동, ESC로 닫기</h2>
+  <div id="grid"></div>
+</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var total = slides.length;
+    var idx = 0;
+
+    var counter = document.getElementById('counter');
+    var curTitle = document.getElementById('curTitle');
+    var progress = document.getElementById('progress');
+    var overview = document.getElementById('overview');
+    var frame = document.getElementById('frame');
+    var grid = document.getElementById('grid');
+
+    // 썸네일은 본문을 복제해 생성한다 (본문을 고치면 그대로 반영됨)
+    slides.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.className = 'thumb';
+      var box = document.createElement('div');
+      box.className = 'thumb-canvas';
+      box.appendChild(s.querySelector('.canvas').cloneNode(true));
+      var meta = document.createElement('span');
+      meta.className = 'thumb-meta';
+      meta.innerHTML = '<b>' + (i + 1) + '</b> ' + (s.dataset.title || '');
+      b.appendChild(box);
+      b.appendChild(meta);
+      b.onclick = function () {
+        go(i);
+        overview.classList.remove('open');
+      };
+      grid.appendChild(b);
+    });
+    var thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+
+    // 960x540 캔버스를 프레임/썸네일 크기에 맞춰 배율 조정
+    function fit() {
+      var w = frame.clientWidth;
+      if (w) document.documentElement.style.setProperty('--s', w / 960);
+      var box = document.querySelector('.thumb-canvas');
+      if (box && box.clientWidth) document.documentElement.style.setProperty('--ts', box.clientWidth / 960);
+    }
+    window.addEventListener('resize', fit);
+    fit();
+
+    function render() {
+      slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+      thumbs.forEach(function (t, i) { t.classList.toggle('current', i === idx); });
+      counter.innerHTML = '<b>' + (idx + 1) + '</b> / ' + total;
+      curTitle.textContent = slides[idx].dataset.title || '';
+      progress.style.width = ((idx + 1) / total) * 100 + '%';
+      try { localStorage.setItem('jjw-1029', String(idx)); } catch (e) {}
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(total - 1, n)); render(); }
+    function next() { go(idx + 1); }
+    function prev() { go(idx - 1); }
+
+    document.getElementById('btnNext').onclick = next;
+    document.getElementById('btnPrev').onclick = prev;
+    document.querySelector('.zone.next').onclick = next;
+    document.querySelector('.zone.prev').onclick = prev;
+    document.getElementById('btnOverview').onclick = function () { overview.classList.toggle('open'); fit(); };
+
+    function toggleFull() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(function () {});
+      else document.exitFullscreen();
+    }
+    document.getElementById('btnFull').onclick = toggleFull;
+    document.addEventListener('fullscreenchange', function () {
+      document.body.classList.toggle('presenting', !!document.fullscreenElement);
+      fit();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      var k = e.key;
+      if (k === 'Escape') { overview.classList.remove('open'); return; }
+      if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); next(); }
+      else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); prev(); }
+      else if (k === 'Home') go(0);
+      else if (k === 'End') go(total - 1);
+      else if (k === 'o' || k === 'O') { overview.classList.toggle('open'); fit(); }
+      else if (k === 'f' || k === 'F') toggleFull();
+    });
+
+    var start = 0;
+    var h = parseInt(location.hash.replace('#', ''), 10);
+    if (h >= 1 && h <= total) start = h - 1;
+    else {
+      try {
+        var sv = parseInt(localStorage.getItem('jjw-1029'), 10);
+        if (sv >= 0 && sv < total) start = sv;
+      } catch (e) {}
+    }
+    go(start);
+  })();
+</script>
+
+</body>
+</html>
